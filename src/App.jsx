@@ -7,8 +7,8 @@ import Approvals from "./pages/request-approval";
 import Reports from "./pages/report-analytics";
 import Orders from "./pages/order-payments";
 import Profile from "./pages/profile-settings";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AdminLayout from "./components/AdminLayout";
+import ProtectedRoute from "./components/protectedRoute";
+import AdminLayout from "./components/adminLayout";
 
 function App() {
   return (
