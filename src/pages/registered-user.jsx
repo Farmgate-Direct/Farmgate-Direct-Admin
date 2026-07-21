@@ -1,10 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa6";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
-import {
-  getRegisteredUsers,
-  deleteUser,
-} from "../services/registeredUserService";
+import { getRegisteredUsers } from "../services/registeredUserService";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -53,21 +50,6 @@ const RegisteredUser = () => {
     loadUsers();
   }, []);
 
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this user?"
-    );
-
-    if (!confirmDelete) return;
-
-    try {
-      await deleteUser(id);
-      loadUsers();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const fullName = user.fullName || user.name || "";
@@ -114,25 +96,27 @@ const RegisteredUser = () => {
 
   return (
     <>
-      <h1 className="text-2xl font-semibold mb-8">REGISTERED USERS</h1>
+      <h1 className="text-xl sm:text-2xl font-semibold mb-6 sm:mb-8">
+        REGISTERED USERS
+      </h1>
 
       {/* FILTER BAR */}
-      <div className="bg-white rounded-2xl shadow-sm p-4 mb-6 flex justify-between items-center gap-4">
+      <div className="bg-white rounded-2xl shadow-sm p-4 mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-3 md:gap-4">
         <input
           type="text"
           placeholder="Search user..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-1/3 bg-gray-100 px-4 py-2.5 rounded-xl outline-none text-sm border border-transparent focus:border-green-600 focus:bg-white transition"
+          className="w-full md:w-1/3 bg-gray-100 px-4 py-2.5 rounded-xl outline-none text-sm border border-transparent focus:border-green-600 focus:bg-white transition"
         />
 
-        <div className="flex gap-3 items-center">
+        <div className="flex flex-wrap gap-3 items-center">
           {/* ROLE FILTER DROPDOWN */}
-          <div ref={roleDropdownRef} className="relative">
+          <div ref={roleDropdownRef} className="relative flex-1 min-w-[140px] sm:flex-none">
             <button
               type="button"
               onClick={() => setRoleDropdownOpen((prev) => !prev)}
-              className="flex items-center justify-between gap-8 bg-gray-100 pl-4 pr-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 outline-none border border-transparent focus:border-green-600 focus:bg-white transition cursor-pointer min-w-36"
+              className="w-full sm:w-auto flex items-center justify-between gap-8 bg-gray-100 pl-4 pr-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 outline-none border border-transparent focus:border-green-600 focus:bg-white transition cursor-pointer sm:min-w-36"
             >
               {roleFilter}
               <FaChevronDown
@@ -166,11 +150,11 @@ const RegisteredUser = () => {
           </div>
 
           {/* STATUS FILTER DROPDOWN */}
-          <div ref={statusDropdownRef} className="relative">
+          <div ref={statusDropdownRef} className="relative flex-1 min-w-[140px] sm:flex-none">
             <button
               type="button"
               onClick={() => setStatusDropdownOpen((prev) => !prev)}
-              className="flex items-center justify-between gap-8 bg-gray-100 pl-4 pr-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 outline-none border border-transparent focus:border-green-600 focus:bg-white transition cursor-pointer min-w-36"
+              className="w-full sm:w-auto flex items-center justify-between gap-8 bg-gray-100 pl-4 pr-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-600 outline-none border border-transparent focus:border-green-600 focus:bg-white transition cursor-pointer sm:min-w-36"
             >
               {statusFilter}
               <FaChevronDown
@@ -206,99 +190,84 @@ const RegisteredUser = () => {
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="text-left text-gray-400 uppercase text-xs tracking-wider">
-              <th className="pb-4">User</th>
-              <th className="pb-4">Role</th>
-              <th className="pb-4">Joined</th>
-              <th className="pb-4">Status</th>
-              <th className="pb-4">Actions</th>
-            </tr>
-          </thead>
+      <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[600px] text-sm">
+            <thead>
+              <tr className="text-left text-gray-400 uppercase text-xs tracking-wider">
+                <th className="pb-4 pr-4">User</th>
+                <th className="pb-4 pr-4">Role</th>
+                <th className="pb-4 pr-4">Joined</th>
+                <th className="pb-4">Status</th>
+              </tr>
+            </thead>
 
-          <tbody className="text-gray-700">
-            {paginatedUsers.length > 0 ? (
-              paginatedUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50 transition">
-                  {/* USER */}
-                  <td className="py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-bold">
-                        {(user.fullName || user.name || "?")
-                          .charAt(0)
-                          .toUpperCase()}
+            <tbody className="text-gray-700">
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 transition">
+                    {/* USER */}
+                    <td className="py-4 pr-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 shrink-0 rounded-full bg-red-500 text-white flex items-center justify-center text-xs font-bold">
+                          {(user.fullName || user.name || "?")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+
+                        <div>
+                          <p className="font-medium">
+                            {user.fullName || user.name}
+                          </p>
+                          <p className="text-xs text-gray-400">{user.email}</p>
+                        </div>
                       </div>
+                    </td>
 
-                      <div>
-                        <p className="font-medium">
-                          {user.fullName || user.name}
-                        </p>
-                        <p className="text-xs text-gray-400">{user.email}</p>
-                      </div>
-                    </div>
-                  </td>
-
-                  {/* ROLE */}
-                  <td>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
-                        user.role?.toLowerCase() === "farmer"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-purple-100 text-purple-700"
-                      }`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-
-                  {/* JOINED */}
-                  <td>
-                    {user.createdAt?.toDate
-                      ? user.createdAt.toDate().toLocaleDateString()
-                      : "-"}
-                  </td>
-
-                  {/* STATUS */}
-                  <td>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        user.status === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-yellow-100 text-yellow-700"
-                      }`}
-                    >
-                      {user.status}
-                    </span>
-                  </td>
-
-                  {/* ACTIONS */}
-                  <td>
-                    <div className="flex gap-2">
-                      <button className="bg-purple-200 text-purple-700 px-2 py-1 rounded-md text-xs">
-                        ✏
-                      </button>
-
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="bg-red-200 text-red-600 px-2 py-1 rounded-md text-xs"
+                    {/* ROLE */}
+                    <td className="pr-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${
+                          user.role?.toLowerCase() === "farmer"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-purple-100 text-purple-700"
+                        }`}
                       >
-                        🗑
-                      </button>
-                    </div>
+                        {user.role}
+                      </span>
+                    </td>
+
+                    {/* JOINED */}
+                    <td className="pr-4 whitespace-nowrap">
+                      {user.createdAt?.toDate
+                        ? user.createdAt.toDate().toLocaleDateString()
+                        : "-"}
+                    </td>
+
+                    {/* STATUS */}
+                    <td>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          user.status === "approved"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {user.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4} className="text-center py-10 text-gray-500">
+                    No registered users found.
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} className="text-center py-10 text-gray-500">
-                  No registered users found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </div>
 
         {/* PAGINATION */}
         {filteredUsers.length > 0 && (
