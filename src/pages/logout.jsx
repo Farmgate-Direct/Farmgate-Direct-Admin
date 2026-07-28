@@ -11,8 +11,6 @@ const LogoutModal = ({ closeModal }) => {
 
   const handleLogout = async () => {
     try {
-      setLoading(true);
-
       await logoutAdmin();
 
       closeModal();
@@ -20,7 +18,7 @@ const LogoutModal = ({ closeModal }) => {
       sileo.success({
         title: "Logout successful!",
         description: "You have been logged out.",
-        fill: "#15803d",
+           fill: "#15803d",
         styles: {
           title: "text-white!",
           description: "text-white!",
@@ -35,109 +33,36 @@ const LogoutModal = ({ closeModal }) => {
         title: "Logout failed",
         description: error.message,
       });
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <div
-      className="
-        fixed inset-0
-        bg-black/40
-        flex items-center justify-center
-        z-50
-        px-4
-      "
-    >
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
 
-      <div
-        className="
-          bg-white
-          w-full
-          max-w-md
-          rounded-3xl
-          shadow-2xl
-          p-5
-          sm:p-8
-          text-center
-        "
-      >
+      <div className="bg-white w-105 rounded-[30px] shadow-2xl p-8 text-center">
 
-        <h2
-          className="
-            text-xl
-            sm:text-2xl
-            font-bold
-            text-green-700
-          "
-        >
+        <h2 className="text-2xl font-bold text-green-700">
           Logout Account?
         </h2>
 
-        <p
-          className="
-            text-gray-500
-            mt-3
-            text-sm
-            sm:text-base
-            leading-relaxed
-          "
-        >
+        <p className="text-gray-500 mt-3">
           Are you sure you want to logout from your admin account?
         </p>
 
-
-        <div
-          className="
-            flex
-            flex-col-reverse
-            sm:flex-row
-            justify-center
-            gap-3
-            sm:gap-4
-            mt-7
-          "
-        >
+        <div className="flex justify-center gap-4 mt-8">
 
           <button
             onClick={closeModal}
             disabled={loading}
-            className="
-              w-full
-              sm:w-auto
-              px-7
-              py-3
-              rounded-xl
-              border
-              border-gray-300
-              text-gray-600
-              font-semibold
-              hover:bg-gray-100
-              cursor-pointer
-              disabled:opacity-50
-            "
+            className="px-7 py-3 rounded-xl border border-gray-300 text-gray-600 font-semibold hover:bg-gray-100 cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
 
-
           <button
             onClick={handleLogout}
             disabled={loading}
-            className="
-              w-full
-              sm:w-auto
-              px-7
-              py-3
-              rounded-xl
-              bg-green-700
-              text-white
-              font-semibold
-              hover:bg-green-800
-              cursor-pointer
-              disabled:bg-green-500
-            "
+            className="px-7 py-3 rounded-xl bg-green-700 text-white font-semibold hover:bg-green-800 cursor-pointer disabled:bg-green-500"
           >
             {loading ? "Logging out..." : "Logout"}
           </button>
