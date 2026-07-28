@@ -347,7 +347,7 @@ const Dashboard = () => {
               </ul>
             ) : (
               <div className="flex h-full items-center justify-center text-gray-400 text-sm">
-                📭 No recent activity
+                No recent activity
               </div>
             )}
           </div>
