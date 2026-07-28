@@ -2,11 +2,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/login";
 import Dashboard from "./pages/dashboard";
-import Users from "./pages/registered-user";
-import Approvals from "./pages/request-approval";
-import Reports from "./pages/report-analytics";
-import Orders from "./pages/order-payments";
-import Profile from "./pages/profile-settings";
+import Users from "./pages/users";
+import Approvals from "./pages/approvals";
+import Reports from "./pages/reports";
+import Orders from "./pages/orders";
+import Profile from "./pages/profile";
 import ProtectedRoute from "./components/protectedRoute";
 import AdminLayout from "./components/adminLayout";
 
