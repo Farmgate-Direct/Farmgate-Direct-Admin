@@ -15,52 +15,52 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    await loginAdmin(email, password);
+      await loginAdmin(email, password);
 
-    sileo.success({
-      title: "Login successful!",
-      description: "Welcome to FarmGate Direct Admin.",
-      fill: "#15803d",
-      styles: {
-        title: "text-white!",
-        description: "text-white!",
-        badge: "bg-white! text-[#15803d]!",
-      },
-    });
+      sileo.success({
+        title: "Login successful!",
+        description: "Welcome to FarmGate Direct Admin.",
+        fill: "#15803d",
+        styles: {
+          title: "text-white!",
+          description: "text-white!",
+          badge: "bg-white! text-[#15803d]!",
+        },
+      });
 
-    navigate("/dashboard", { replace: true });
-  } catch (error) {
-    console.error(error);
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      console.error(error);
 
-    let message = "Invalid email or password.";
+      let message = "Invalid email or password.";
 
-    if (error.message === "Unauthorized") {
-      message = "Administrator account not found.";
-    } else if (
-      error.message === "Your administrator account has been deactivated."
-    ) {
-      message = "Your administrator account has been deactivated.";
+      if (error.message === "Unauthorized") {
+        message = "Administrator account not found.";
+      } else if (
+        error.message === "Your administrator account has been deactivated."
+      ) {
+        message = "Your administrator account has been deactivated.";
+      }
+
+      sileo.error({
+        title: "Login failed!",
+        description: message,
+        fill: "#DC2626",
+        styles: {
+          title: "text-white!",
+          description: "text-white!",
+          badge: "bg-white! text-[#DC2626]!",
+        },
+      });
+    } finally {
+      setLoading(false);
     }
-
-    sileo.error({
-      title: "Login failed!",
-      description: message,
-      fill: "#DC2626",
-      styles: {
-        title: "text-white!",
-        description: "text-white!",
-        badge: "bg-white! text-[#DC2626]!",
-      },
-    });
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-6">
@@ -70,11 +70,6 @@ const Login = () => {
           <img src={logo} alt="FarmGate Logo" className="w-28 h-28 mb-6" />
 
           <h1 className="text-4xl font-bold tracking-wide">FARMGATE DIRECT</h1>
-
-          {/* <p className="text-green-100 mt-5 text-center leading-7 max-w-sm">
-            Securely manage user approvals, transactions, reports, and system
-            operations through the FarmGate Direct Admin Portal.
-          </p> */}
         </div>
 
         {/* RIGHT */}

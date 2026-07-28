@@ -10,7 +10,7 @@ import {
   getRecentActivity,
   getRecentOrders,
   getMonthlyRevenue,
-} from "../services/dashboardService"; // 👈 palitan kung iba ang path niyo
+} from "../services/dashboardService"; 
 
 const statusStyles = {
   completed: "bg-green-100 text-green-700",
@@ -39,10 +39,10 @@ const SkeletonLine = ({ className = "" }) => (
 );
 
 const StatCardSkeleton = () => (
-  <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6 flex flex-col items-center justify-center gap-3">
-    <SkeletonLine className="h-10 w-10 sm:h-11 sm:w-11 rounded-full" />
-    <SkeletonLine className="h-5 sm:h-6 w-14 sm:w-16" />
-    <SkeletonLine className="h-3 w-20 sm:w-24" />
+  <div className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 flex flex-col items-center justify-center gap-3">
+    <SkeletonLine className="h-11 w-11 rounded-full" />
+    <SkeletonLine className="h-6 w-16" />
+    <SkeletonLine className="h-3 w-24" />
   </div>
 );
 
@@ -116,28 +116,28 @@ const Dashboard = () => {
   const statCards = [
     {
       key: "farmers",
-      icon: <img src={farmerImg} alt="Farmer" width={24} className="sm:w-[26px]" />,
+      icon: <img src={farmerImg} alt="Farmer" width={26} />,
       iconBg: "bg-green-100",
       value: stats.farmers,
       label: "Registered Farmers",
     },
     {
       key: "buyers",
-      icon: <FaUser size={20} className="text-blue-600 sm:size-[22px]" />,
+      icon: <FaUser size={22} className="text-blue-600" />,
       iconBg: "bg-blue-100",
       value: stats.buyers,
       label: "Registered Buyers",
     },
     {
       key: "total",
-      icon: <FaUsers size={20} className="text-purple-600 sm:size-[22px]" />,
+      icon: <FaUsers size={22} className="text-purple-600" />,
       iconBg: "bg-purple-100",
       value: stats.total,
       label: "Total Users",
     },
     {
       key: "revenue",
-      icon: <BsBarChartFill size={20} className="text-yellow-600 sm:size-[22px]" />,
+      icon: <BsBarChartFill size={22} className="text-yellow-600" />,
       iconBg: "bg-yellow-100",
       value: `₱${monthlyRevenue.toLocaleString()}`,
       label: "Monthly Revenue",
@@ -145,38 +145,36 @@ const Dashboard = () => {
   ];
 
   return (
-    // 👈 pt-20 para di matakpan ng hamburger button sa mobile, lg:pt-0 kasi wala nang hamburger sa desktop
-    // px-4 sm:px-6 lg:px-8 para may tamang gutter sa lahat ng screen size
-    <div className="pt-20 lg:pt-0 px-4 sm:px-6 lg:px-0">
+    <>
       {/* HEADER */}
       <div className="mb-6 sm:mb-8">
-        <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold">
+        <h1 className="text-xl sm:text-2xl font-semibold">
           Dashboard Overview
         </h1>
-        <p className="text-xs sm:text-sm text-gray-400 mt-1">{todayLabel()}</p>
+        <p className="text-sm text-gray-400 mt-1">{todayLabel()}</p>
       </div>
 
       {/* ERROR BANNER */}
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-xl text-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-3">
+        <div className="mb-6 bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <FiAlertCircle className="shrink-0" />
             <span>{error}</span>
           </div>
           <button
             onClick={loadDashboard}
-            className="shrink-0 font-medium underline hover:no-underline self-end sm:self-auto"
+            className="shrink-0 font-medium underline hover:no-underline"
           >
             Retry
           </button>
         </div>
       )}
 
-      <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
+      <div className="flex flex-col lg:flex-row gap-6">
         {/* LEFT SIDE */}
-        <div className="flex-1 flex flex-col gap-4 sm:gap-6 min-w-0">
-          {/* STATS - 1 col sa super small, 2 col sa mobile/tablet, 4 col sa desktop */}
-          <div className="grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+        <div className="flex-1 flex flex-col gap-6 min-w-0">
+          {/* STATS */}
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
             {loading
               ? Array.from({ length: 4 }).map((_, i) => (
                   <StatCardSkeleton key={i} />
@@ -184,17 +182,17 @@ const Dashboard = () => {
               : statCards.map((card) => (
                   <div
                     key={card.key}
-                    className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6 flex flex-col justify-center items-center hover:shadow-md transition-shadow"
+                    className="bg-white rounded-2xl shadow-sm p-5 sm:p-6 flex flex-col justify-center items-center hover:shadow-md transition-shadow"
                   >
                     <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 sm:mb-3 ${card.iconBg}`}
+                      className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 ${card.iconBg}`}
                     >
                       {card.icon}
                     </div>
-                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 text-center break-words">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-800">
                       {card.value}
                     </div>
-                    <p className="text-gray-500 text-[11px] sm:text-xs lg:text-sm mt-1 text-center">
+                    <p className="text-gray-500 text-xs sm:text-sm mt-1 text-center">
                       {card.label}
                     </p>
                   </div>
@@ -207,9 +205,8 @@ const Dashboard = () => {
               Recent Transactions
             </h2>
 
-            {/* 👈 -mx-4 sm:mx-0 para full-bleed scroll sa mobile (di kailangan ng manual side padding) */}
-            <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
-              <table className="w-full min-w-[640px] text-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-140 text-sm">
                 <thead>
                   <tr className="text-left text-gray-400 uppercase text-xs tracking-wider">
                     <th className="pb-3 pr-4">Buyer</th>
@@ -268,10 +265,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* RIGHT SIDE - 👈 tinanggal ang fixed w-80, ginawang full width sa mobile/tablet */}
-        <div className="w-full lg:w-80 flex flex-col gap-4 sm:gap-6">
+        {/* RIGHT SIDE */}
+        <div className="w-full lg:w-80 flex flex-col gap-6">
           {/* PENDING APPROVALS */}
-          <div className="bg-white min-h-56 lg:h-64 rounded-2xl shadow-sm p-4 sm:p-6">
+          <div className="bg-white min-h-56 lg:h-64 rounded-2xl shadow-sm p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-semibold">Pending Approvals</h2>
 
@@ -299,7 +296,7 @@ const Dashboard = () => {
                 {pendingUsers.slice(0, 4).map((user) => (
                   <div
                     key={user.id}
-                    className="flex justify-between items-center gap-2"
+                    className="flex justify-between items-center"
                   >
                     <div className="flex items-center min-w-0">
                       <div className="w-8 h-8 shrink-0 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs mr-3">
@@ -322,8 +319,8 @@ const Dashboard = () => {
           </div>
 
           {/* RECENT ACTIVITY */}
-          <div className="bg-white flex-1 rounded-2xl shadow-md p-4 sm:p-6">
-            <h2 className="font-semibold mb-4 sm:mb-6">Recent Activity</h2>
+          <div className="bg-white flex-1 rounded-2xl shadow-md p-6">
+            <h2 className="font-semibold mb-6">Recent Activity</h2>
 
             {loading ? (
               <div className="space-y-4">
@@ -357,7 +354,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
