@@ -10,7 +10,7 @@ import {
   getRecentActivity,
   getRecentOrders,
   getMonthlyRevenue,
-} from "../services/dashboardService"; 
+} from "../services/dashboardService";
 
 const statusStyles = {
   completed: "bg-green-100 text-green-700",
@@ -348,7 +348,7 @@ const Dashboard = () => {
               </ul>
             ) : (
               <div className="flex h-full items-center justify-center text-gray-400 text-sm">
-                📭 No recent activity
+                No recent activity
               </div>
             )}
           </div>
