@@ -16,10 +16,10 @@ import LogoutModal from "../pages/logout";
 
 const Sidebar = () => {
   const [showLogout, setShowLogout] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); 
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuClass = ({ isActive }) =>
-    `flex items-center gap-3 px-4 py-3 rounded-lg transition duration-200
+    `flex items-center gap-3 px-3 py-2.5 rounded-lg transition duration-200
     ${
       isActive
         ? "bg-green-700 text-white"
@@ -53,33 +53,41 @@ const Sidebar = () => {
 
       <div
         className={`
-          fixed left-0 top-0 h-screen w-64
+          fixed left-0 top-0
+          h-dvh w-56 sm:w-60 lg:w-64
           bg-[#14532D] text-white
-          flex flex-col shadow-xl
+          flex flex-col
+          overflow-hidden
+          shadow-xl
           z-40
           transition-transform duration-300 ease-in-out
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           lg:translate-x-0
         `}
       >
-        <div className="p-6 flex items-center justify-between gap-3 border-b border-green-700">
-          <div className="flex flex-col items-center gap-3 mx-auto">
-            <img src={logo} alt="FarmGate Logo" className="h-12 w-auto" />
-            <h1 className="text-lg font-bold tracking-wide text-center">
+        {/* Header */}
+        <div className="relative p-4 border-b border-green-700">
+          <div className="flex flex-col items-center gap-2">
+            <img
+              src={logo}
+              alt="FarmGate Logo"
+              className="h-10 lg:h-12 w-auto"
+            />
+            <h1 className="text-base lg:text-lg font-bold tracking-wide text-center">
               FarmGate Direct
             </h1>
           </div>
 
           <button
             onClick={closeDrawer}
-            className="lg:hidden text-white/80 hover:text-white absolute top-4 right-4"
+            className="lg:hidden absolute top-4 right-4 text-white/80 hover:text-white"
             aria-label="Close menu"
           >
             <FaTimes size={18} />
           </button>
         </div>
 
-        <div className="flex-1 p-4 flex flex-col gap-2 text-sm font-medium overflow-y-auto">
+        <div className="flex-1 p-3 flex flex-col gap-2">
           <NavLink to="/dashboard" className={menuClass} onClick={closeDrawer}>
             <TbLayoutDashboardFilled size={18} />
             <span>Dashboard</span>
@@ -105,7 +113,7 @@ const Sidebar = () => {
             <span>Orders</span>
           </NavLink>
 
-          <div className="border-t border-green-700 my-3"></div>
+          <div className="border-t border-green-700 my-2"></div>
 
           <NavLink to="/profile" className={menuClass} onClick={closeDrawer}>
             <FaUserCog size={18} />
@@ -113,14 +121,15 @@ const Sidebar = () => {
           </NavLink>
         </div>
 
-        <div className="p-4 border-t border-green-700">
+        <div className="p-3 border-t border-green-700 shrink-0">
           <button
             onClick={() => setShowLogout(true)}
             className="
               w-full flex items-center gap-3
-              px-4 py-3 rounded-lg
+              px-3 py-2.5 rounded-lg
               bg-red-600 hover:bg-red-700
-              transition font-medium cursor-pointer
+              transition duration-200
+              font-medium
             "
           >
             <FaSignOutAlt size={18} />
@@ -129,7 +138,9 @@ const Sidebar = () => {
         </div>
       </div>
 
-      {showLogout && <LogoutModal closeModal={() => setShowLogout(false)} />}
+      {showLogout && (
+        <LogoutModal closeModal={() => setShowLogout(false)} />
+      )}
     </>
   );
 };
