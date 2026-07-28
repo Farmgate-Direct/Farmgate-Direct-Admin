@@ -18,17 +18,20 @@ const Sidebar = () => {
   const [showLogout, setShowLogout] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
+useEffect(() => {
+  if (isOpen) {
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+  } else {
+    document.body.style.overflow = "auto";
+    document.documentElement.style.overflow = "auto";
+  }
 
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen]);
+  return () => {
+    document.body.style.overflow = "auto";
+    document.documentElement.style.overflow = "auto";
+  };
+}, [isOpen]);
 
   const menuClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2.5 rounded-lg transition duration-200
