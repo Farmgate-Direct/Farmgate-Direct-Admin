@@ -6,7 +6,7 @@ import { FiDownload } from "react-icons/fi";
 const ReportAnalytics = () => {
   return (
     <div className="space-y-5">
-      <h1 className="text-2xl font-semibold mb-8">REPORTS & ANALYTICS</h1>
+      <h1 className="text-2xl font-semibold mb-8">REPORTS</h1>
 
       {/* TOP STATS */}
       <div className="grid grid-cols-4 gap-5">

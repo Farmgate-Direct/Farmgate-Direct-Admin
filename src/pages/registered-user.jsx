@@ -112,7 +112,7 @@ const RegisteredUser = () => {
 
         <div className="flex flex-wrap gap-3 items-center">
           {/* ROLE FILTER DROPDOWN */}
-          <div ref={roleDropdownRef} className="relative flex-1 min-w-[140px] sm:flex-none">
+          <div ref={roleDropdownRef} className="relative flex-1 min-w-35 sm:flex-none">
             <button
               type="button"
               onClick={() => setRoleDropdownOpen((prev) => !prev)}
@@ -150,7 +150,7 @@ const RegisteredUser = () => {
           </div>
 
           {/* STATUS FILTER DROPDOWN */}
-          <div ref={statusDropdownRef} className="relative flex-1 min-w-[140px] sm:flex-none">
+          <div ref={statusDropdownRef} className="relative flex-1 min-w-35 sm:flex-none">
             <button
               type="button"
               onClick={() => setStatusDropdownOpen((prev) => !prev)}
@@ -192,7 +192,7 @@ const RegisteredUser = () => {
       {/* TABLE */}
       <div className="bg-white rounded-2xl shadow-md p-4 sm:p-6">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-sm">
+          <table className="w-full min-w-150 text-sm">
             <thead>
               <tr className="text-left text-gray-400 uppercase text-xs tracking-wider">
                 <th className="pb-4 pr-4">User</th>

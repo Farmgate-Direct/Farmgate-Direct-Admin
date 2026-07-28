@@ -71,10 +71,10 @@ const Login = () => {
 
           <h1 className="text-4xl font-bold tracking-wide">FARMGATE DIRECT</h1>
 
-          <p className="text-green-100 mt-5 text-center leading-7 max-w-sm">
+          {/* <p className="text-green-100 mt-5 text-center leading-7 max-w-sm">
             Securely manage user approvals, transactions, reports, and system
             operations through the FarmGate Direct Admin Portal.
-          </p>
+          </p> */}
         </div>
 
         {/* RIGHT */}
