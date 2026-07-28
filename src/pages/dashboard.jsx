@@ -10,7 +10,7 @@ import {
   getRecentActivity,
   getRecentOrders,
   getMonthlyRevenue,
-} from "../services/dashboardService"; // 👈 palitan kung iba ang path niyo
+} from "../services/dashboardService";
 
 const statusStyles = {
   completed: "bg-green-100 text-green-700",
@@ -31,9 +31,6 @@ const todayLabel = () =>
     year: "numeric",
   });
 
-// ==========================
-// SKELETON HELPERS
-// ==========================
 const SkeletonLine = ({ className = "" }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 );
@@ -116,28 +113,28 @@ const Dashboard = () => {
   const statCards = [
     {
       key: "farmers",
-      icon: <img src={farmerImg} alt="Farmer" width={24} className="sm:w-[26px]" />,
+      icon: <img src={farmerImg} alt="Farmer" className="w-6 h-6 sm:w-[26px] sm:h-[26px]" />,
       iconBg: "bg-green-100",
       value: stats.farmers,
       label: "Registered Farmers",
     },
     {
       key: "buyers",
-      icon: <FaUser size={20} className="text-blue-600 sm:size-[22px]" />,
+      icon: <FaUser className="text-blue-600 w-5 h-5 sm:w-[22px] sm:h-[22px]" />,
       iconBg: "bg-blue-100",
       value: stats.buyers,
       label: "Registered Buyers",
     },
     {
       key: "total",
-      icon: <FaUsers size={20} className="text-purple-600 sm:size-[22px]" />,
+      icon: <FaUsers className="text-purple-600 w-5 h-5 sm:w-[22px] sm:h-[22px]" />,
       iconBg: "bg-purple-100",
       value: stats.total,
       label: "Total Users",
     },
     {
       key: "revenue",
-      icon: <BsBarChartFill size={20} className="text-yellow-600 sm:size-[22px]" />,
+      icon: <BsBarChartFill className="text-yellow-600 w-5 h-5 sm:w-[22px] sm:h-[22px]" />,
       iconBg: "bg-yellow-100",
       value: `₱${monthlyRevenue.toLocaleString()}`,
       label: "Monthly Revenue",
@@ -145,9 +142,9 @@ const Dashboard = () => {
   ];
 
   return (
-    // 👈 pt-20 para di matakpan ng hamburger button sa mobile, lg:pt-0 kasi wala nang hamburger sa desktop
-    // px-4 sm:px-6 lg:px-8 para may tamang gutter sa lahat ng screen size
-    <div className="pt-20 lg:pt-0 px-4 sm:px-6 lg:px-0">
+    // 👈 KEY FIX: lg:ml-64 dapat kapareho ng width ng fixed Sidebar sa desktop (w-64)
+    // pt-20 lg:pt-8 para may space sa taas (hamburger sa mobile, breathing room sa desktop)
+    <div className="min-h-screen bg-gray-50 pt-20 pb-8 px-4 sm:px-6 lg:pt-8 lg:pl-8 lg:pr-6 lg:ml-64">
       {/* HEADER */}
       <div className="mb-6 sm:mb-8">
         <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold">
@@ -175,8 +172,8 @@ const Dashboard = () => {
       <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
         {/* LEFT SIDE */}
         <div className="flex-1 flex flex-col gap-4 sm:gap-6 min-w-0">
-          {/* STATS - 1 col sa super small, 2 col sa mobile/tablet, 4 col sa desktop */}
-          <div className="grid grid-cols-1 xs:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+          {/* STATS */}
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
             {loading
               ? Array.from({ length: 4 }).map((_, i) => (
                   <StatCardSkeleton key={i} />
@@ -184,17 +181,17 @@ const Dashboard = () => {
               : statCards.map((card) => (
                   <div
                     key={card.key}
-                    className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6 flex flex-col justify-center items-center hover:shadow-md transition-shadow"
+                    className="bg-white rounded-2xl shadow-sm p-4 sm:p-5 lg:p-6 flex flex-col justify-center items-center hover:shadow-md transition-shadow min-w-0"
                   >
                     <div
-                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 sm:mb-3 ${card.iconBg}`}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 sm:mb-3 shrink-0 ${card.iconBg}`}
                     >
                       {card.icon}
                     </div>
-                    <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 text-center break-words">
+                    <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-800 text-center break-words w-full">
                       {card.value}
                     </div>
-                    <p className="text-gray-500 text-[11px] sm:text-xs lg:text-sm mt-1 text-center">
+                    <p className="text-gray-500 text-[10px] sm:text-xs lg:text-sm mt-1 text-center">
                       {card.label}
                     </p>
                   </div>
@@ -202,12 +199,11 @@ const Dashboard = () => {
           </div>
 
           {/* RECENT TRANSACTIONS */}
-          <div className="bg-white flex-1 rounded-2xl shadow-md p-4 sm:p-6">
+          <div className="bg-white flex-1 rounded-2xl shadow-md p-4 sm:p-6 min-w-0">
             <h2 className="font-semibold text-gray-800 mb-4 sm:mb-6">
               Recent Transactions
             </h2>
 
-            {/* 👈 -mx-4 sm:mx-0 para full-bleed scroll sa mobile (di kailangan ng manual side padding) */}
             <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
               <table className="w-full min-w-[640px] text-sm">
                 <thead>
@@ -268,8 +264,8 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* RIGHT SIDE - 👈 tinanggal ang fixed w-80, ginawang full width sa mobile/tablet */}
-        <div className="w-full lg:w-80 flex flex-col gap-4 sm:gap-6">
+        {/* RIGHT SIDE */}
+        <div className="w-full lg:w-80 flex flex-col gap-4 sm:gap-6 shrink-0">
           {/* PENDING APPROVALS */}
           <div className="bg-white min-h-56 lg:h-64 rounded-2xl shadow-sm p-4 sm:p-6">
             <div className="flex justify-between items-center mb-4">
