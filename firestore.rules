@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function myAdminDoc() {
+      return get(/databases/$(database)/documents/admins/$(request.auth.uid)).data;
+    }
+
+    function isActiveAdmin() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && myAdminDoc().status == 'Active';
+    }
+
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && (request.auth.uid == adminId || isActiveAdmin());
+      allow list: if isActiveAdmin();
+      allow create: if false;
+      allow update: if (isSignedIn() && request.auth.uid == adminId
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['name'])
+          && request.resource.data.name is string
+          && request.resource.data.name.size() >= 1
+          && request.resource.data.name.size() <= 100);
+      allow delete: if false;
+    }
+
+    match /users/{userId} {
+      allow get: if isActiveAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow list: if isActiveAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId
+        && request.resource.data.status == 'pending';
+      allow update: if (isActiveAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedAt', 'updatedAt']))
+        || (isSignedIn() && request.auth.uid == userId
+          && request.resource.data.status == resource.data.status);
+      allow delete: if isActiveAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow get: if isActiveAdmin()
+        || (isSignedIn() && (request.auth.uid == resource.data.buyerId
+          || request.auth.uid == resource.data.farmerId));
+      allow list: if isActiveAdmin();
+      allow create: if isSignedIn()
+        && request.resource.data.buyerId == request.auth.uid;
+      allow update: if isActiveAdmin()
+        || (isSignedIn() && (request.auth.uid == resource.data.buyerId
+          || request.auth.uid == resource.data.farmerId));
+      allow delete: if false;
+    }
+
+    match /adminActivities/{activityId} {
+      allow read: if isActiveAdmin();
+      allow create: if isActiveAdmin()
+        && request.resource.data.adminId == request.auth.uid
+        && request.resource.data.keys().hasOnly(['action', 'description', 'adminId', 'adminName', 'adminEmail', 'targetId', 'targetName', 'createdAt'])
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.action in ['login', 'logout', 'approve_registration', 'decline_registration', 'ban_user', 'unban_user', 'create_admin', 'update_profile_name', 'update_password', 'export_report'];
+      allow update, delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

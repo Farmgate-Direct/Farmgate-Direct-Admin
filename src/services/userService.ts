@@ -1,26 +1,35 @@
 import {
   collection,
-  query,
-  where,
-  getDocs,
-  doc,
-  updateDoc,
   deleteDoc,
+  doc,
+  getDocs,
   serverTimestamp,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../FirebaseConfig";
 
-export const getPendingUsers = async () => {
-  const q = query(collection(db, "users"), where("status", "==", "pending"));
-  const snapshot = await getDocs(q);
+const usersCollection = collection(db, "users");
 
-  return snapshot.docs.map((docSnap) => ({
-    id: docSnap.id,
-    ...docSnap.data(),
-  }));
+const assertUid = (uid: string) => {
+  if (typeof uid !== "string" || uid.length === 0 || uid.length > 128) {
+    throw new Error("Invalid user id.");
+  }
+};
+
+const norm = (value: any) => (value || "").toString().trim().toLowerCase();
+
+export const getPendingUsers = async () => {
+  const snapshot = await getDocs(usersCollection);
+  return snapshot.docs
+    .map((docSnap) => ({
+      id: docSnap.id,
+      ...docSnap.data(),
+    }))
+    .filter((user: any) => norm(user.status) === "pending");
 };
 
 export const approveUser = async (uid: string) => {
+  assertUid(uid);
   await updateDoc(doc(db, "users", uid), {
     status: "approved",
     approvedAt: serverTimestamp(),
@@ -28,12 +37,6 @@ export const approveUser = async (uid: string) => {
 };
 
 export const rejectUser = async (uid: string) => {
-  // For now, rejection just deletes the pending record.
-  // Pwede mo palitan to sa updateDoc({status: "rejected", rejectedAt: serverTimestamp()})
-  // instead of deleting, kung gusto mong ma-track pa rin yung rejected users.
-  await deleteDoc(doc(db, "users", uid));
-};
-
-export const deleteUser = async (uid: string) => {
+  assertUid(uid);
   await deleteDoc(doc(db, "users", uid));
 };

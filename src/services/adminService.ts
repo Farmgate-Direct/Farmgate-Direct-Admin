@@ -1,148 +1,50 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  updateDoc,
-  deleteDoc,
-  setDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { auth, db } from "../FirebaseConfig";
 
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+const MAX_NAME_LENGTH = 100;
 
-import { initializeApp, getApps } from "firebase/app";
+const assertUid = (uid: string) => {
+  if (typeof uid !== "string" || uid.length === 0 || uid.length > 128) {
+    throw new Error("Invalid admin id.");
+  }
+};
 
-import { auth, db, app } from "../FirebaseConfig";
-
-// ==========================
-// SECONDARY AUTH
-// ==========================
-
-const secondaryApp =
-  getApps().find((item) => item.name === "Secondary") ||
-  initializeApp(app.options, "Secondary");
-
-const secondaryAuth = getAuth(secondaryApp);
-
-// ==========================
-// CURRENT ADMIN
-// ==========================
+const assertName = (name: string) => {
+  if (typeof name !== "string" || name.trim().length === 0) {
+    throw new Error("Full name cannot be empty.");
+  }
+  if (name.trim().length > MAX_NAME_LENGTH) {
+    throw new Error("Full name is too long.");
+  }
+};
 
 export const getCurrentAdmin = async () => {
   const user = auth.currentUser;
-
   if (!user) {
     throw new Error("No authenticated user");
   }
-
   const adminRef = doc(db, "admins", user.uid);
-
   const snapshot = await getDoc(adminRef);
-
   if (!snapshot.exists()) {
     throw new Error("Admin not found");
   }
-
   return {
     id: snapshot.id,
-
     ...snapshot.data(),
   };
 };
 
-// ==========================
-// GET ALL ADMINS
-// ==========================
-
-export const getAllAdmins = async () => {
-  const snapshot = await getDocs(collection(db, "admins"));
-
-  return snapshot.docs.map((doc) => ({
-    id: doc.id,
-
-    ...doc.data(),
-  }));
-};
-
-// ==========================
-// CREATE ADMIN
-// ==========================
-
-export const createAdmin = async (data: any) => {
-  const userCredential = await createUserWithEmailAndPassword(
-    secondaryAuth,
-
-    data.email,
-
-    data.password,
-  );
-
-  const uid = userCredential.user.uid;
-
-  await setDoc(
-    doc(db, "admins", uid),
-
-    {
-      name: data.name,
-
-      email: data.email,
-
-      role: data.role,
-
-      status: "Active",
-
-      lastLogin: null,
-
-      createdAt: serverTimestamp(),
-    },
-  );
-};
-
-// ==========================
-// UPDATE LAST LOGIN
-// ==========================
-
 export const updateLastLogin = async (uid: string) => {
-  await updateDoc(
-    doc(db, "admins", uid),
-
-    {
-      lastLogin: serverTimestamp(),
-    },
-  );
+  assertUid(uid);
+  await updateDoc(doc(db, "admins", uid), {
+    lastLogin: serverTimestamp(),
+  });
 };
 
-// ==========================
-// UPDATE PROFILE
-// ==========================
-
-export const updateAdminProfile = async (
-  uid: string,
-
-  data: any,
-) => {
-  await updateDoc(
-    doc(db, "admins", uid),
-
-    data,
-  );
-};
-
-// ==========================
-// TOGGLE ADMIN STATUS (Activate / Deactivate)
-// ==========================
-
-export const toggleAdminStatus = async (uid: string, currentStatus: string) => {
-  const newStatus = currentStatus === "Active" ? "Inactive" : "Active";
-
-  await updateDoc(
-    doc(db, "admins", uid),
-
-    {
-      status: newStatus,
-    },
-  );
-
-  return newStatus;
+// Only the display name may be edited here; role/status/email are
+// intentionally not writable so privilege fields can't be mass-assigned.
+export const updateAdminProfile = async (uid: string, name: string) => {
+  assertUid(uid);
+  assertName(name);
+  await updateDoc(doc(db, "admins", uid), { name: name.trim() });
 };

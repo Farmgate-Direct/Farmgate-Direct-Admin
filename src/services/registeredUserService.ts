@@ -1,15 +1,16 @@
-import {
-  collection,
-  getDocs,
-  doc,
-  deleteDoc,
-  updateDoc,
-  serverTimestamp,
-} from "firebase/firestore";
+import { collection, doc, getDocs, updateDoc } from "firebase/firestore";
 import { db } from "../FirebaseConfig";
 
+const usersCollection = collection(db, "users");
+
+const assertUid = (uid: string) => {
+  if (typeof uid !== "string" || uid.length === 0 || uid.length > 128) {
+    throw new Error("Invalid user id.");
+  }
+};
+
 export const getRegisteredUsers = async () => {
-  const snapshot = await getDocs(collection(db, "users"));
+  const snapshot = await getDocs(usersCollection);
 
   return snapshot.docs.map((docSnap) => ({
     id: docSnap.id,
@@ -17,13 +18,12 @@ export const getRegisteredUsers = async () => {
   }));
 };
 
-export const updateUser = async (uid: string, data: any) => {
-  await updateDoc(doc(db, "users", uid), {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
+export const banUser = async (userId: string) => {
+  assertUid(userId);
+  await updateDoc(doc(db, "users", userId), { status: "banned" });
 };
 
-export const deleteUser = async (uid: string) => {
-  await deleteDoc(doc(db, "users", uid));
+export const unbanUser = async (userId: string) => {
+  assertUid(userId);
+  await updateDoc(doc(db, "users", userId), { status: "approved" });
 };
