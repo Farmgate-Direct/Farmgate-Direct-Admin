@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa6";
+import { FaShoppingCart } from "react-icons/fa";
 import { GrUserWorker } from "react-icons/gr";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import {
@@ -44,7 +45,7 @@ const RowSkeleton = ({ cols = 7 }) => (
 );
 
 const TransactionCardSkeleton = () => (
-  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+  <div className="bg-white border border-gray-100 rounded-[10px] p-4 space-y-3">
     <div className="flex justify-between items-center gap-2">
       <SkeletonLine className="h-4 w-24" />
       <SkeletonLine className="h-5 w-16 rounded-full" />
@@ -290,17 +291,17 @@ const OrderPayments = () => {
   const statusStyle = (status) => {
     switch (status?.toLowerCase().replace(/[\s_-]+/g, "_")) {
       case "delivered":
-        return "bg-green-100 text-green-700";
+      case "claimed":
       case "accepted":
-        return "bg-teal-100 text-teal-700";
-      case "pending":
-        return "bg-yellow-100 text-yellow-700";
       case "processing":
-        return "bg-blue-100 text-blue-700";
+        return "bg-[#DCFCE7] text-[#14532d]";
+      case "pending":
+        return "bg-[#FEF3C7] text-[#D97706]";
       case "to_receive":
-        return "bg-purple-100 text-purple-700";
+      case "preparing":
+        return "bg-[#fef3c7] text-[#92400e]";
       case "cancelled":
-        return "bg-red-100 text-red-700";
+        return "bg-[#FDE8E8] text-[#DC2626]";
       default:
         return "bg-gray-100 text-gray-700";
     }
@@ -318,6 +319,8 @@ const OrderPayments = () => {
         return "To Receive";
       case "delivered":
         return "Delivered";
+      case "claimed":
+        return "Claimed";
       case "cancelled":
         return "Cancelled";
       default:
@@ -373,14 +376,14 @@ const OrderPayments = () => {
     }
     const acceptedAt =
       order.farmerDecisionAt ||
-      (["accepted", "processing", "to_receive", "delivered"].includes(
+      (["accepted", "processing", "to_receive", "delivered", "claimed"].includes(
         order.status?.toLowerCase?.() ?? order.status,
       )
         ? order.updatedAt || order.createdAt
         : null);
     const isAccepted =
       order.farmerDecision === "accepted" ||
-      ["accepted", "processing", "to_receive", "delivered"].includes(
+      ["accepted", "processing", "to_receive", "delivered", "claimed"].includes(
         order.status?.toLowerCase?.() ?? order.status,
       );
     if (isAccepted && acceptedAt) {
@@ -416,7 +419,7 @@ const OrderPayments = () => {
     if (order.deliveredAt) {
       steps.push({
         key: "delivered",
-        title: "Delivered",
+        title: order.delivery === "pickup" || order.status === "claimed" ? "Claimed" : "Delivered",
         date: order.deliveredAt,
         Icon: FiCheckCircle,
         color: "#2563EB",
@@ -438,15 +441,26 @@ const OrderPayments = () => {
 
   return (
     <>
-      <div className="mb-5 sm:mb-6 lg:mb-8">
-        <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-gray-800">
-          Orders & Payments
-        </h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Track every transaction between buyers and farmers.
-        </p>
+      <div
+        className="rounded-[10px] p-[18px] sm:p-6 lg:p-8 flex justify-between items-center mb-5 sm:mb-6 lg:mb-8"
+        style={{ backgroundColor: "#14532d" }}
+      >
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold tracking-widest text-[#bbf7d0] uppercase">
+            Transactions
+          </p>
+          <h1 className="text-xl font-black text-white mt-2">
+            Orders & Payments
+          </h1>
+          <p className="text-xs text-[#dcfce7] mt-1">
+            Track every transaction between buyers and farmers.
+          </p>
+        </div>
+        <div className="hidden sm:flex w-16 h-16 rounded-full bg-white items-center justify-center shrink-0">
+          <FaShoppingCart size={28} color="#14532d" />
+        </div>
       </div>
-      <div className="bg-white rounded-2xl shadow-md">
+      <div className="bg-white rounded-[10px] shadow-sm border border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 sm:p-5 lg:p-6 border-b border-gray-100">
           <div className="relative w-full md:w-72">
             <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none" />
@@ -456,7 +470,7 @@ const OrderPayments = () => {
               maxLength={100}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-100 pl-10 pr-4 py-2.5 rounded-xl outline-none text-sm text-gray-700 placeholder:text-gray-400 border border-transparent focus:border-green-700 focus:bg-white transition"
+              className="w-full bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-[5px] outline-none text-sm text-gray-700 placeholder:text-gray-400 focus:border-[#14532d] transition"
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-3 md:ml-auto w-full md:w-auto">
@@ -467,7 +481,7 @@ const OrderPayments = () => {
               <button
                 type="button"
                 onClick={() => setDateDropdownOpen((prev) => !prev)}
-                className="w-full flex items-center justify-between gap-2 bg-gray-100 pl-4 pr-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 outline-none border border-transparent focus:border-green-700 focus:bg-white transition cursor-pointer"
+                className="w-full flex items-center justify-between gap-2 bg-white border border-gray-200 pl-4 pr-3.5 py-2.5 rounded-[5px] text-sm font-medium text-gray-700 outline-none focus:border-[#14532d] transition cursor-pointer"
               >
                 <span className="flex items-center gap-1.5 truncate min-w-0">
                   <FiCalendar className="text-gray-400 shrink-0" size={13} />
@@ -505,7 +519,7 @@ const OrderPayments = () => {
                       }}
                       className={`w-full text-left px-4 py-2.5 text-sm transition ${
                         option === dateFilter
-                          ? "bg-green-700 text-white font-medium"
+                          ? "bg-[#14532d] text-white font-medium"
                           : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
@@ -522,7 +536,7 @@ const OrderPayments = () => {
               <button
                 type="button"
                 onClick={() => setStatusDropdownOpen((prev) => !prev)}
-                className="w-full flex items-center justify-between gap-2 bg-gray-100 pl-4 pr-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 outline-none border border-transparent focus:border-green-700 focus:bg-white transition cursor-pointer"
+                className="w-full flex items-center justify-between gap-2 bg-white border border-gray-200 pl-4 pr-3.5 py-2.5 rounded-[5px] text-sm font-medium text-gray-700 outline-none focus:border-[#14532d] transition cursor-pointer"
               >
                 <span className="truncate">{statusFilter}</span>
                 <FaChevronDown
@@ -540,6 +554,7 @@ const OrderPayments = () => {
                     "Processing",
                     "To Receive",
                     "Delivered",
+                    "Claimed",
                     "Cancelled",
                   ].map((option) => (
                     <button
@@ -551,7 +566,7 @@ const OrderPayments = () => {
                       }}
                       className={`w-full text-left px-4 py-2.5 text-sm transition ${
                         option === statusFilter
-                          ? "bg-green-700 text-white font-medium"
+                          ? "bg-[#14532d] text-white font-medium"
                           : "text-gray-700 hover:bg-gray-50"
                       }`}
                     >
@@ -577,7 +592,7 @@ const OrderPayments = () => {
                 </colgroup>
               )}
               <thead>
-                <tr className="text-left text-gray-400 uppercase text-xs tracking-wider">
+                <tr className="text-left text-gray-500 uppercase text-[11px] font-semibold tracking-[1.5px]">
                   <th className="pb-4 pr-4 font-medium">Order ID</th>
                   <th className="pb-4 pr-4 font-medium">Buyer</th>
                   <th className="pb-4 pr-4 font-medium">Farmer</th>
@@ -615,7 +630,7 @@ const OrderPayments = () => {
                       </td>
                       <td className="pr-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${statusStyle(
+                          className={`px-3 py-1 rounded-full text-[11px] font-bold capitalize ${statusStyle(
                             order.status,
                           )}`}
                         >
@@ -674,14 +689,14 @@ const OrderPayments = () => {
                 <div
                   key={order.id}
                   onClick={() => setSelectedOrder(order)}
-                  className="bg-gray-50 rounded-xl p-4 active:bg-gray-100 transition cursor-pointer"
+                  className="bg-white border border-gray-100 rounded-[10px] p-4 transition cursor-pointer"
                 >
                   <div className="flex justify-between items-start gap-2 mb-2">
                     <span className="font-semibold text-sm text-gray-800">
                       #{order.id.slice(0, 6)}
                     </span>
                     <span
-                      className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize ${statusStyle(
+                      className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-bold capitalize ${statusStyle(
                         order.status,
                       )}`}
                     >
@@ -710,7 +725,7 @@ const OrderPayments = () => {
                   <div
                     key={`empty-${i}`}
                     aria-hidden="true"
-                    className="bg-gray-50 rounded-xl p-4 opacity-0 pointer-events-none select-none"
+                    className="bg-white border border-gray-100 rounded-[10px] p-4 opacity-0 pointer-events-none select-none"
                   >
                     <div className="flex justify-between items-start gap-2 mb-2">
                       <span className="font-semibold text-sm">—</span>
@@ -730,7 +745,7 @@ const OrderPayments = () => {
                 <div
                   key={`empty-${i}`}
                   aria-hidden="true"
-                  className="bg-gray-50 rounded-xl p-4 opacity-0 pointer-events-none select-none"
+                  className="bg-white border border-gray-100 rounded-[10px] p-4 opacity-0 pointer-events-none select-none"
                 >
                   <div className="flex justify-between items-start gap-2 mb-2">
                     <span className="font-semibold text-sm">—</span>
@@ -764,18 +779,18 @@ const OrderPayments = () => {
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
                 aria-label="Previous page"
-                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-lg text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 transition"
+                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-[10px] text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#F6F6F6] transition"
               >
                 <IoIosArrowBack size={16} />
               </button>
-              <span className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-lg text-sm font-semibold bg-green-700 text-white">
+              <span className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-[10px] text-sm font-bold bg-[#14532d] text-white">
                 {currentPage}
               </span>
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 aria-label="Next page"
-                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-lg text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 transition"
+                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-[10px] text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#F6F6F6] transition"
               >
                 <IoIosArrowForward size={16} />
               </button>
@@ -806,18 +821,18 @@ const OrderPayments = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg rounded-2xl shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-[fadeIn_0.15s_ease-out]"
+            className="bg-white w-full max-w-lg rounded-[10px] shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-[fadeIn_0.15s_ease-out]"
           >
-            <div className="bg-green-700 text-white px-5 sm:px-6 py-5 flex items-start justify-between gap-3 shrink-0">
+            <div className="bg-[#14532d] text-white px-5 sm:px-6 py-[18px] flex items-start justify-between gap-3 shrink-0">
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-green-100 text-xs font-medium uppercase tracking-wider mb-1">
+                <div className="flex items-center gap-2 text-[#bbf7d0] text-[10px] font-bold uppercase tracking-widest mb-1">
                   <FiHash size={12} />
                   Order Details
                 </div>
                 <h2 className="text-lg sm:text-xl font-bold tracking-tight truncate">
                   #{selectedOrder.id.slice(0, 6)}
                 </h2>
-                <div className="flex items-center gap-1.5 text-green-100 text-xs mt-2">
+                <div className="flex items-center gap-1.5 text-[#dcfce7] text-xs mt-2">
                   <FiCalendar size={13} />
                   {formatDate(selectedOrder.createdAt)}
                 </div>
@@ -831,7 +846,7 @@ const OrderPayments = () => {
                   <FiX size={22} />
                 </button>
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold capitalize bg-white text-green-700`}
+                  className={`px-3 py-1 rounded-full text-[11px] font-bold capitalize bg-white text-[#14532d]`}
                 >
                   {getStatusLabel(selectedOrder.status)}
                 </span>
@@ -839,8 +854,8 @@ const OrderPayments = () => {
             </div>
             <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-blue-50 rounded-xl p-3 sm:p-4 min-w-0">
-                  <div className="flex items-center gap-1.5 text-blue-700 text-[11px] font-semibold uppercase tracking-wider mb-2">
+                <div className="bg-[#eff6ff] rounded-[10px] p-3 sm:p-4 min-w-0">
+                  <div className="flex items-center gap-1.5 text-[#2563EB] text-[11px] font-semibold uppercase tracking-[1.5px] mb-2">
                     <FiUser size={13} />
                     Buyer
                   </div>
@@ -848,8 +863,8 @@ const OrderPayments = () => {
                     {selectedOrder.buyerName || "N/A"}
                   </p>
                 </div>
-                <div className="bg-green-50 rounded-xl p-3 sm:p-4 min-w-0">
-                  <div className="flex items-center gap-1.5 text-green-700 text-[11px] font-semibold uppercase tracking-wider mb-2">
+                <div className="bg-[#f0fdf4] rounded-[10px] p-3 sm:p-4 min-w-0">
+                  <div className="flex items-center gap-1.5 text-[#14532d] text-[11px] font-semibold uppercase tracking-[1.5px] mb-2">
                     <GrUserWorker size={13} />
                     Farmer
                   </div>
@@ -858,8 +873,8 @@ const OrderPayments = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3.5">
-                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] font-semibold uppercase tracking-wider">
+              <div className="flex items-center justify-between bg-[#F6F6F6] rounded-[10px] px-4 py-3.5">
+                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] font-semibold uppercase tracking-[1.5px]">
                   <FiCreditCard size={13} />
                   Payment Method
                 </div>
@@ -868,19 +883,19 @@ const OrderPayments = () => {
                 </span>
               </div>
               <div>
-                <div className="flex items-center gap-2 text-gray-400 text-[11px] font-semibold uppercase tracking-wider mb-3">
+                <div className="flex items-center gap-2 text-gray-400 text-[11px] font-semibold uppercase tracking-[1.5px] mb-3">
                   <FiPackage size={13} />
                   Products ({selectedOrder.products?.length ?? 0})
                 </div>
                 {selectedOrder.products?.length > 0 ? (
-                  <div className="border border-gray-100 rounded-xl divide-y divide-gray-100 overflow-hidden">
+                  <div className="border border-gray-100 rounded-[10px] divide-y divide-gray-100 overflow-hidden">
                     {selectedOrder.products.map((product, i) => (
                       <div
                         key={i}
                         className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition"
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-7 h-7 shrink-0 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-bold">
+                          <div className="w-7 h-7 shrink-0 rounded-full bg-[#DCFCE7] text-[#14532d] flex items-center justify-center text-xs font-bold">
                             {i + 1}
                           </div>
                           <div className="min-w-0">
@@ -904,13 +919,13 @@ const OrderPayments = () => {
                     ))}
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-400 bg-gray-50 rounded-xl px-4 py-6 text-center">
+                  <p className="text-sm text-gray-400 bg-[#F6F6F6] rounded-[10px] px-4 py-6 text-center">
                     No products listed
                   </p>
                 )}
               </div>
-              <div className="bg-gray-50 rounded-xl p-4 sm:p-5">
-                <div className="flex items-center gap-2 text-gray-400 text-[11px] font-semibold uppercase tracking-wider mb-4">
+              <div className="bg-[#F6F6F6] rounded-[10px] p-4 sm:p-5">
+                <div className="flex items-center gap-2 text-gray-400 text-[11px] font-semibold uppercase tracking-[1.5px] mb-4">
                   <FiClock size={13} />
                   Order Timeline
                 </div>
@@ -974,11 +989,11 @@ const OrderPayments = () => {
                   );
                 })()}
               </div>
-              <div className="flex items-center justify-between bg-green-50 rounded-xl px-4 py-4 gap-3">
-                <span className="text-sm font-semibold text-green-900">
+              <div className="flex items-center justify-between bg-[#f0fdf4] rounded-[10px] px-4 py-4 gap-3">
+                <span className="text-sm font-semibold text-[#14532d]">
                   Total Amount
                 </span>
-                <span className="text-lg font-bold tracking-tight text-green-700 shrink-0">
+                <span className="text-lg font-bold tracking-tight text-[#14532d] shrink-0">
                   ₱{(selectedOrder.total ?? 0).toLocaleString()}
                 </span>
               </div>

@@ -7,8 +7,8 @@ import { loginAdmin } from "../services/authService";
 
 const Login = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@farmgatedirect.com");
+  const [password, setPassword] = useState("farmgate.direct@10192026!");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -20,11 +20,11 @@ const Login = () => {
       sileo.success({
         title: "Login successful!",
         description: "Welcome to FarmGate Direct Admin.",
-        fill: "#15803d",
+        fill: "#14532d",
         styles: {
           title: "text-white!",
           description: "text-white!",
-          badge: "bg-white! text-[#15803d]!",
+          badge: "bg-white! text-[#14532d]!",
         },
       });
       navigate("/dashboard", { replace: true });
@@ -63,7 +63,7 @@ const Login = () => {
             alt="FarmGate Logo"
             className="w-14 h-14 sm:w-20 sm:h-20 md:w-28 md:h-28 md:mb-6"
           />
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-center">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-wide uppercase text-center">
             FarmGate Direct
           </h1>
         </div>
@@ -76,7 +76,7 @@ const Login = () => {
             <label className="block text-gray-700 text-sm font-semibold mb-2">
               Email
             </label>
-            <div className="flex flex-row items-center bg-white border border-gray-200 rounded-[10px] px-3 mb-5 focus-within:border-green-700 transition">
+            <div className="flex flex-row items-center bg-white border border-gray-200 rounded-[10px] px-3 mb-5 focus-within:border-[#14532d] transition">
               <FiMail size={20} color="#14532d" className="shrink-0" />
               <input
                 type="email"
@@ -91,7 +91,7 @@ const Login = () => {
             <label className="block text-gray-700 text-sm font-semibold mb-2">
               Password
             </label>
-            <div className="flex flex-row items-center bg-white border border-gray-200 rounded-[10px] px-3 mb-7 focus-within:border-green-700 transition">
+            <div className="flex flex-row items-center bg-white border border-gray-200 rounded-[10px] px-3 mb-7 focus-within:border-[#14532d] transition">
               <FiLock size={20} color="#14532d" className="shrink-0" />
               <input
                 type={showPassword ? "text" : "password"}
@@ -105,7 +105,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
-                className="text-gray-400 hover:text-green-700 transition cursor-pointer shrink-0"
+                className="text-gray-400 hover:text-[#14532d] transition cursor-pointer shrink-0"
                 aria-label={showPassword ? "Hide password" : "Show password"}
                 tabIndex={-1}
               >

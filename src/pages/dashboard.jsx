@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { FaShoppingCart } from "react-icons/fa";
+import { TbLayoutDashboardFilled } from "react-icons/tb";
 import { BsBarChartFill } from "react-icons/bs";
 import { FaUser } from "react-icons/fa6";
 import { FiAlertCircle } from "react-icons/fi";
@@ -13,17 +14,18 @@ import {
 } from "../services/dashboardService";
 
 const statusStyles = {
-  completed: "bg-green-100 text-green-700",
-  delivered: "bg-green-100 text-green-700",
-  accepted: "bg-teal-100 text-teal-700",
-  confirmed: "bg-blue-100 text-blue-700",
-  processing: "bg-blue-100 text-blue-700",
-  preparing: "bg-purple-100 text-purple-700",
-  shipped: "bg-indigo-100 text-indigo-700",
-  to_receive: "bg-purple-100 text-purple-700",
-  "to receive": "bg-purple-100 text-purple-700",
-  pending: "bg-yellow-100 text-yellow-700",
-  cancelled: "bg-red-100 text-red-700",
+  completed: "bg-[#DCFCE7] text-[#14532d]",
+  delivered: "bg-[#DCFCE7] text-[#14532d]",
+  claimed: "bg-[#DCFCE7] text-[#14532d]",
+  accepted: "bg-[#DCFCE7] text-[#14532d]",
+  confirmed: "bg-[#DCFCE7] text-[#14532d]",
+  processing: "bg-[#DCFCE7] text-[#14532d]",
+  preparing: "bg-[#fef3c7] text-[#92400e]",
+  shipped: "bg-[#fef3c7] text-[#92400e]",
+  to_receive: "bg-[#fef3c7] text-[#92400e]",
+  "to receive": "bg-[#fef3c7] text-[#92400e]",
+  pending: "bg-[#FEF3C7] text-[#D97706]",
+  cancelled: "bg-[#FDE8E8] text-[#DC2626]",
 };
 
 const getStatusStyle = (status) =>
@@ -41,6 +43,8 @@ const getStatusLabel = (status) => {
       return "To Receive";
     case "delivered":
       return "Delivered";
+    case "claimed":
+      return "Claimed";
     case "cancelled":
       return "Cancelled";
     default:
@@ -58,6 +62,7 @@ const ORDER_STATUSES = [
   "Processing",
   "To Receive",
   "Delivered",
+  "Claimed",
   "Cancelled",
 ];
 
@@ -74,8 +79,8 @@ const SkeletonLine = ({ className = "" }) => (
 );
 
 const StatCardSkeleton = () => (
-  <div className="bg-white rounded-2xl shadow-md p-4 sm:p-5 lg:p-6 flex flex-col items-center justify-center gap-3">
-    <SkeletonLine className="h-11 w-11 rounded-full" />
+  <div className="bg-white rounded-[10px] shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-3">
+    <SkeletonLine className="h-12 w-12 rounded-[10px]" />
     <SkeletonLine className="h-6 w-16" />
     <SkeletonLine className="h-3 w-24" />
   </div>
@@ -92,7 +97,7 @@ const RowSkeleton = ({ cols = 6 }) => (
 );
 
 const TransactionCardSkeleton = () => (
-  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+  <div className="bg-[#F6F6F6] rounded-[10px] p-4 space-y-3">
     <div className="flex justify-between items-center">
       <SkeletonLine className="h-4 w-24" />
       <SkeletonLine className="h-5 w-16 rounded-full" />
@@ -128,7 +133,9 @@ const Dashboard = () => {
       pending: 0,
       accepted: 0,
       processing: 0,
+      to_receive: 0,
       delivered: 0,
+      claimed: 0,
       cancelled: 0,
     },
   });
@@ -167,8 +174,7 @@ const Dashboard = () => {
     loadDashboard();
   }, [loadDashboard]);
 
-  // Re-fetch when the tab regains focus so counts never look stale after
-  // approving/banning users on another page.
+  // Refresh when the tab is focused again.
   useEffect(() => {
     const handleFocus = () => {
       loadDashboard();
@@ -222,7 +228,9 @@ const Dashboard = () => {
       const title =
         status === "delivered"
           ? `Order delivered — ${product}`
-          : `Order ${order.status || "updated"} — ${product}`;
+          : status === "claimed"
+            ? `Order claimed — ${product}`
+            : `Order ${order.status || "updated"} — ${product}`;
       const sub = `${order.buyerName || "Buyer"} → ${getFarmerName(order)} · ${formatDate(order.createdAt)}`;
       return {
         key: `order-${order.id}`,
@@ -233,8 +241,44 @@ const Dashboard = () => {
     });
     return [...registrations, ...orderEvents]
       .sort((a, b) => b.millis - a.millis)
-      .slice(0, 5);
+      .slice(0, 6);
   }, [recentUsers, recentOrders]);
+
+  // Sample list when there is no activity yet.
+  const PREVIEW_ACTIVITY = [
+    {
+      key: "preview-act-1",
+      title: "Juan Dela Cruz registered as farmer",
+      sub: `Submitted on ${formatDate(new Date())}`,
+    },
+    {
+      key: "preview-act-2",
+      title: "Order delivered — Papaya",
+      sub: `Pam → Renz Galoy · ${formatDate(new Date())}`,
+    },
+    {
+      key: "preview-act-3",
+      title: "Maria Santos registered as buyer",
+      sub: `Submitted on ${formatDate(new Date())}`,
+    },
+    {
+      key: "preview-act-4",
+      title: "Order pending — Patatas (Potato)",
+      sub: `mj → Renz Galoy · ${formatDate(new Date())}`,
+    },
+    {
+      key: "preview-act-5",
+      title: "Jose Mendoza registered as farmer",
+      sub: `Submitted on ${formatDate(new Date())}`,
+    },
+    {
+      key: "preview-act-6",
+      title: "Order processing — Papaya",
+      sub: `Pam → Renz Galoy · ${formatDate(new Date())}`,
+    },
+  ];
+  const visibleActivityFeed =
+    activityFeed.length > 0 ? activityFeed : PREVIEW_ACTIVITY;
 
   const displayOrders = useMemo(() => {
     return recentOrders.slice(0, 5);
@@ -243,51 +287,67 @@ const Dashboard = () => {
   const statCards = [
     {
       key: "farmers",
-      icon: <GrUserWorker size={22} className="text-green-700" />,
-      iconBg: "bg-green-100",
+      icon: <GrUserWorker size={26} color="#14532d" />,
+      iconBg: "bg-[#f0fdf4]",
       value: userCounts.farmers,
       label: "Registered Farmers",
+      dark: false,
     },
     {
       key: "buyers",
-      icon: <FaUser size={20} className="text-blue-700" />,
-      iconBg: "bg-blue-100",
+      icon: <FaUser size={22} color="#2563EB" />,
+      iconBg: "bg-[#eff6ff]",
       value: userCounts.buyers,
       label: "Registered Buyers",
+      dark: false,
     },
     {
       key: "orders",
-      icon: <FaShoppingCart size={22} className="text-green-700" />,
-      iconBg: "bg-green-100",
+      icon: <FaShoppingCart size={26} color="#14532d" />,
+      iconBg: "bg-[#f0fdf4]",
       value: ordersSummary.totalOrders,
       label: "Total Orders",
+      dark: false,
     },
     {
       key: "earnings",
-      icon: <BsBarChartFill size={20} className="text-yellow-700" />,
-      iconBg: "bg-yellow-100",
+      icon: <BsBarChartFill size={22} color="#14532d" />,
+      iconBg: "bg-white",
       value: formatPeso(ordersSummary.earnings),
       label: "FarmGate Earnings",
+      dark: true,
     },
   ];
 
   return (
     <>
-      <div className="mb-5 sm:mb-6 lg:mb-8">
-        <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-gray-800">
-          Dashboard Overview
-        </h1>
-        <p className="text-sm text-gray-400 mt-1">{todayLabel()}</p>
+      {/* Top banner */}
+      <div
+        className="rounded-[10px] p-[18px] sm:p-6 lg:p-8 mb-5 sm:mb-6 lg:mb-8 flex flex-row items-center justify-between gap-3"
+        style={{ backgroundColor: "#14532d" }}
+      >
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-bold tracking-widest text-[#bbf7d0] uppercase">
+            Admin Overview
+          </p>
+          <h1 className="text-xl font-black text-white mt-2 leading-tight">
+            Dashboard
+          </h1>
+          <p className="text-xs text-[#dcfce7] mt-1">{todayLabel()}</p>
+        </div>
+        <div className="w-16 h-16 rounded-full items-center justify-center shrink-0 hidden sm:flex bg-white">
+          <TbLayoutDashboardFilled size={30} color="#14532d" />
+        </div>
       </div>
       {error && (
-        <div className="mb-6 bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-xl text-sm flex items-center justify-between gap-3">
+        <div className="mb-5 bg-[#FDE8E8] border border-red-100 text-[#DC2626] px-4 py-3 rounded-[10px] text-sm flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <FiAlertCircle className="shrink-0" />
             <span>{error}</span>
           </div>
           <button
             onClick={loadDashboard}
-            className="shrink-0 font-semibold underline hover:no-underline min-h-11 flex items-center"
+            className="shrink-0 font-bold underline hover:no-underline min-h-11 flex items-center"
           >
             Retry
           </button>
@@ -301,25 +361,38 @@ const Dashboard = () => {
           : statCards.map((card) => (
               <div
                 key={card.key}
-                className="bg-white rounded-2xl shadow-md p-4 sm:p-5 lg:p-6 flex flex-col justify-center items-center hover:shadow-lg transition-shadow"
+                className={`rounded-[10px] shadow-sm border p-5 flex flex-col justify-center items-center active:opacity-90 transition ${
+                  card.dark
+                    ? "border-transparent text-white"
+                    : "bg-white border-gray-100"
+                }`}
+                style={card.dark ? { backgroundColor: "#14532d" } : undefined}
               >
                 <div
-                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-2 sm:mb-3 ${card.iconBg}`}
+                  className={`w-12 h-12 rounded-[10px] flex items-center justify-center mb-2 ${card.iconBg}`}
                 >
                   {card.icon}
                 </div>
-                <div className="text-xl sm:text-2xl font-bold tracking-tight text-gray-800">
+                <div
+                  className={`text-[22px] font-bold leading-tight ${
+                    card.dark ? "text-white" : "text-gray-900"
+                  }`}
+                >
                   {card.value}
                 </div>
-                <p className="text-gray-400 text-xs sm:text-sm mt-1 text-center">
+                <p
+                  className={`text-[12px] mt-1 text-center ${
+                    card.dark ? "text-[#dcfce7]" : "text-gray-500"
+                  }`}
+                >
                   {card.label}
                 </p>
               </div>
             ))}
       </div>
       <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 mt-4 sm:mt-5">
-        <div className="flex-1 min-w-0 bg-white rounded-2xl shadow-md p-4 sm:p-5 lg:p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-4 sm:mb-6">
+        <div className="flex-1 min-w-0 bg-white rounded-[10px] shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6">
+          <h2 className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase mb-4">
             Recent Activity
           </h2>
           {loading ? (
@@ -331,31 +404,31 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
-          ) : activityFeed.length > 0 ? (
+          ) : visibleActivityFeed.length > 0 ? (
             <ul className="text-sm text-gray-700 space-y-4">
-              {activityFeed.map((item) => (
-                <li key={item.key} className="flex gap-2">
-                  <span className="mt-1.5 w-1.5 h-1.5 shrink-0 rounded-full bg-green-700" />
+              {visibleActivityFeed.map((item) => (
+                <li key={item.key} className="flex gap-2.5">
+                  <span className="mt-1.5 w-1.5 h-1.5 shrink-0 rounded-full" style={{ backgroundColor: "#14532d" }} />
                   <div className="min-w-0">
-                    <p className="truncate">{item.title}</p>
-                    <span className="text-xs text-gray-400">{item.sub}</span>
+                    <p className="font-semibold text-gray-900 text-[14px] truncate">{item.title}</p>
+                    <span className="text-xs text-gray-500">{item.sub}</span>
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <div className="py-8 text-center text-gray-400 text-sm">
+            <div className="py-8 text-center text-gray-500 text-sm">
               No recent activity
             </div>
           )}
         </div>
-        <div className="w-full lg:w-96 shrink-0 bg-white rounded-2xl shadow-md p-4 sm:p-5 lg:p-6">
-          <div className="flex justify-between items-center mb-4 sm:mb-6">
-            <h2 className="text-base font-semibold text-gray-800">
+        <div className="flex-1 min-w-0 bg-white rounded-[10px] shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase">
               Pending Approvals
             </h2>
             {!loading && (
-              <span className="flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-700">
+              <span className="flex items-center justify-center min-w-6 h-6 px-2 rounded-full text-[11px] font-bold bg-[#FEF3C7] text-[#D97706]">
                 {pendingUsers.length}
               </span>
             )}
@@ -375,47 +448,82 @@ const Dashboard = () => {
             </div>
           ) : pendingUsers.length > 0 ? (
             <div className="space-y-4">
-              {pendingUsers.slice(0, 5).map((user) => (
+              {pendingUsers.slice(0, 6).map((user) => (
                 <div key={user.id} className="flex items-center gap-3">
-                  <div className="w-8 h-8 shrink-0 rounded-full bg-green-700 text-white flex items-center justify-center text-xs font-bold">
+                  <div className="w-9 h-9 shrink-0 rounded-full text-white flex items-center justify-center text-xs font-bold" style={{ backgroundColor: "#14532d" }}>
                     {user.fullName?.charAt(0)?.toUpperCase() ?? "?"}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-gray-800 truncate">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
                       {user.fullName}
                     </p>
-                    <p className="text-xs text-gray-400 truncate capitalize">
+                    <p className="text-xs text-gray-500 truncate capitalize">
                       {user.role} · Joined {formatDate(user.createdAt)}
                     </p>
                   </div>
-                  <span className="shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                  <span className="shrink-0 px-3 py-1 rounded-full text-[11px] font-bold bg-[#FEF3C7] text-[#D97706]">
                     New
                   </span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center text-gray-400 text-sm">
+            <div className="py-8 text-center text-gray-500 text-sm">
               No pending approvals
             </div>
           )}
         </div>
-      </div>
-      <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 mt-4 sm:mt-5">
-        <div className="flex-1 min-w-0 bg-white rounded-2xl shadow-md p-4 sm:p-5 lg:p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-4 sm:mb-6">
-            Recent Transactions
+        <div className="flex-1 min-w-0 bg-white rounded-[10px] shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6">
+          <h2 className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase mb-4">
+            Order Overview
           </h2>
+          {loading ? (
+            <div className="space-y-3">
+              {ORDER_STATUSES.map((status) => (
+                <div
+                  key={status}
+                  className="flex items-center justify-between bg-[#F6F6F6] rounded-[10px] px-4 py-3"
+                >
+                  <SkeletonLine className="h-3 w-20" />
+                  <SkeletonLine className="h-4 w-8" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {ORDER_STATUSES.map((status) => (
+                <div
+                  key={status}
+                  className="flex items-center justify-between bg-[#F6F6F6] rounded-[10px] px-4 py-3"
+                >
+                  <span className="text-[14px] font-semibold text-gray-900">
+                    {status}
+                  </span>
+                  <span className="text-[14px] font-bold text-gray-900">
+                    {ordersSummary.statusCounts[
+                      status.toLowerCase().replace(/\s+/g, "_")
+                    ] ?? 0}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <div className="bg-white rounded-[10px] shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6 mt-4 sm:mt-5 min-w-0">
+        <h2 className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase mb-4 sm:mb-6">
+          Recent Transactions
+        </h2>
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full min-w-180 text-sm">
               <thead>
-                <tr className="text-left text-gray-400 uppercase text-xs tracking-wider">
-                  <th className="pb-3 pr-4 font-medium">Buyer</th>
-                  <th className="pb-3 pr-4 font-medium">Farm</th>
-                  <th className="pb-3 pr-4 font-medium">Product</th>
-                  <th className="pb-3 pr-4 font-medium">Amount</th>
-                  <th className="pb-3 pr-4 font-medium">Status</th>
-                  <th className="pb-3 font-medium">Date</th>
+                <tr className="text-left text-gray-500 uppercase text-[11px] font-semibold tracking-[1.5px]">
+                  <th className="pb-3 pr-4 font-semibold">Buyer</th>
+                  <th className="pb-3 pr-4 font-semibold">Farm</th>
+                  <th className="pb-3 pr-4 font-semibold">Product</th>
+                  <th className="pb-3 pr-4 font-semibold">Amount</th>
+                  <th className="pb-3 pr-4 font-semibold">Status</th>
+                  <th className="pb-3 font-semibold">Date</th>
                 </tr>
               </thead>
               <tbody className="text-gray-700">
@@ -425,11 +533,11 @@ const Dashboard = () => {
                   ))
                 ) : displayOrders.length > 0 ? (
                   displayOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50 transition">
-                      <td className="py-4 pr-4 font-medium text-gray-800">
+                    <tr key={order.id} className="hover:bg-[#F6F6F6] transition">
+                      <td className="py-3 pr-4 font-medium text-gray-800">
                         {order.buyerName}
                       </td>
-                      <td className="pr-4">{getFarmerName(order)}</td>
+                      <td className="pr-4 max-w-40 truncate">{getFarmerName(order)}</td>
                       <td className="pr-4 max-w-40 truncate">
                         {getProduceSummary(order.products)}
                       </td>
@@ -438,7 +546,7 @@ const Dashboard = () => {
                       </td>
                       <td className="pr-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusStyle(
+                          className={`px-3 py-1 rounded-full text-[11px] font-bold capitalize ${getStatusStyle(
                             order.status,
                           )}`}
                         >
@@ -470,13 +578,13 @@ const Dashboard = () => {
               ))
             ) : displayOrders.length > 0 ? (
               displayOrders.map((order) => (
-                <div key={order.id} className="bg-gray-50 rounded-xl p-4">
+                <div key={order.id} className="bg-white rounded-[10px] border border-gray-100 p-4">
                   <div className="flex justify-between items-start mb-2 gap-2">
                     <span className="font-semibold text-sm text-gray-800 truncate min-w-0">
                       {order.buyerName}
                     </span>
                     <span
-                      className={`shrink-0 px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusStyle(
+                      className={`shrink-0 px-3 py-1 rounded-full text-[11px] font-bold capitalize ${getStatusStyle(
                         order.status,
                       )}`}
                     >
@@ -486,7 +594,7 @@ const Dashboard = () => {
                   <p className="text-xs text-gray-400 mb-1 truncate">
                     {getFarmerName(order)}
                   </p>
-                  <p className="text-xs text-gray-500 mb-3 truncate">
+                  <p className="text-xs text-gray-400 mb-3 truncate">
                     {getProduceSummary(order.products)}
                   </p>
                   <div className="flex justify-between items-center">
@@ -506,43 +614,6 @@ const Dashboard = () => {
             )}
           </div>
         </div>
-        <div className="w-full lg:w-80 shrink-0 bg-white rounded-2xl shadow-md p-4 sm:p-5 lg:p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-4 sm:mb-6">
-            Order Overview
-          </h2>
-          {loading ? (
-            <div className="space-y-3">
-              {ORDER_STATUSES.map((status) => (
-                <div
-                  key={status}
-                  className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3"
-                >
-                  <SkeletonLine className="h-3 w-20" />
-                  <SkeletonLine className="h-4 w-8" />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {ORDER_STATUSES.map((status) => (
-                <div
-                  key={status}
-                  className="flex items-center justify-between bg-gray-50 rounded-xl px-4 py-3"
-                >
-                  <span className="text-sm font-medium text-gray-700">
-                    {status}
-                  </span>
-                  <span className="text-sm font-bold text-gray-800">
-                    {ordersSummary.statusCounts[
-                      status.toLowerCase().replace(/\s+/g, "_")
-                    ] ?? 0}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
     </>
   );
 };

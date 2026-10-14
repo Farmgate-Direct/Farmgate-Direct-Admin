@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa6";
+import { FaUserCheck } from "react-icons/fa";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FiCheck, FiX, FiSearch, FiUserCheck, FiUserX } from "react-icons/fi";
 import {
@@ -19,7 +20,7 @@ const SkeletonLine = ({ className = "" }) => (
 const RowSkeleton = ({ cols = 4 }) => (
   <tr>
     {Array.from({ length: cols }).map((_, i) => (
-      <td key={i} className="py-4 pr-4">
+      <td key={i} className="py-3 pr-4">
         <SkeletonLine className="h-4 w-full max-w-24" />
       </td>
     ))}
@@ -27,7 +28,7 @@ const RowSkeleton = ({ cols = 4 }) => (
 );
 
 const UserCardSkeleton = () => (
-  <div className="bg-gray-50 rounded-xl p-4 space-y-3">
+  <div className="bg-white border border-gray-100 rounded-[10px] p-4 space-y-3">
     <div className="flex items-center gap-3">
       <SkeletonLine className="h-9 w-9 rounded-full shrink-0" />
       <div className="flex-1 space-y-1.5">
@@ -183,7 +184,7 @@ const RequestApproval = () => {
           ? `Approved registration of ${targetName}`
           : `Declined registration of ${targetName}`,
         { targetId: user.id, targetName },
-      );
+      )?.catch?.(() => {});
       toastSuccess(
         action === "approve" ? "Registration approved" : "Registration declined",
         action === "approve"
@@ -198,7 +199,8 @@ const RequestApproval = () => {
       }
     } catch (error) {
       console.error(`Failed to ${action} user:`, error);
-      toastError("Action failed", `Could not ${action} this request. Please try again.`);
+      const detail = error?.message ? ` ${error.message}` : "";
+      toastError("Action failed", `Could not ${action} this request.${detail} Please try again.`);
     } finally {
       setActionLoading(false);
     }
@@ -211,20 +213,31 @@ const RequestApproval = () => {
 
   const roleStyle = (role) =>
     role?.toLowerCase() === "farmer"
-      ? "bg-green-100 text-green-700"
-      : "bg-purple-100 text-purple-700";
+      ? "bg-[#DCFCE7] text-[#14532d]"
+      : "bg-[#eff6ff] text-[#2563EB]";
 
   return (
     <>
-      <div className="mb-5 sm:mb-6 lg:mb-8">
-        <h1 className="text-lg sm:text-xl lg:text-2xl font-semibold tracking-tight text-gray-800">
-          Pending Approvals
-        </h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Review and approve new buyer and farmer registrations.
-        </p>
+      <div
+        className="rounded-[10px] p-[18px] sm:p-6 lg:p-8 flex justify-between items-center mb-5 sm:mb-6 lg:mb-8"
+        style={{ backgroundColor: "#14532d" }}
+      >
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold tracking-widest text-[#bbf7d0] uppercase">
+            Approvals
+          </p>
+          <h1 className="text-xl font-black text-white mt-2">
+            Pending Approvals
+          </h1>
+          <p className="text-xs text-[#dcfce7] mt-1">
+            Review and approve new buyer and farmer registrations.
+          </p>
+        </div>
+        <div className="hidden sm:flex w-16 h-16 rounded-full bg-white items-center justify-center shrink-0">
+          <FaUserCheck size={30} color="#14532d" />
+        </div>
       </div>
-      <div className="bg-white rounded-2xl shadow-md">
+      <div className="bg-white rounded-[10px] shadow-sm border border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 sm:p-5 lg:p-6 border-b border-gray-100">
           <div className="relative w-full md:w-72">
             <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm pointer-events-none" />
@@ -234,7 +247,7 @@ const RequestApproval = () => {
               maxLength={100}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-gray-100 pl-10 pr-4 py-2.5 rounded-xl outline-none text-sm text-gray-700 placeholder:text-gray-400 border border-transparent focus:border-green-700 focus:bg-white transition"
+              className="w-full bg-white border border-gray-200 pl-10 pr-4 py-2.5 rounded-[5px] outline-none text-sm text-gray-700 placeholder:text-gray-400 focus:border-[#14532d] transition"
             />
           </div>
           <div className="flex gap-3 md:ml-auto">
@@ -242,7 +255,7 @@ const RequestApproval = () => {
               <button
                 type="button"
                 onClick={() => setRoleDropdownOpen((prev) => !prev)}
-                className="w-full flex items-center justify-between gap-2 bg-gray-100 pl-4 pr-3.5 py-2.5 rounded-xl text-sm font-medium text-gray-700 outline-none border border-transparent focus:border-green-700 focus:bg-white transition cursor-pointer"
+                className="w-full flex items-center justify-between gap-2 bg-white border border-gray-200 pl-4 pr-3.5 py-2.5 rounded-[5px] text-sm font-medium text-gray-700 outline-none focus:border-[#14532d] transition cursor-pointer"
               >
                 <span className="truncate">{roleFilter}</span>
                 <FaChevronDown
@@ -252,7 +265,7 @@ const RequestApproval = () => {
                 />
               </button>
               {roleDropdownOpen && (
-                <div className="absolute left-0 z-10 mt-1.5 w-full bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1">
+                <div className="absolute left-0 z-10 mt-1.5 w-full bg-white rounded-[10px] shadow-sm border border-gray-100 overflow-hidden py-1">
                   {["All Roles", "Buyer", "Farmer"].map((option) => (
                     <button
                       key={option}
@@ -263,8 +276,8 @@ const RequestApproval = () => {
                       }}
                       className={`w-full text-left px-4 py-2.5 text-sm transition ${
                         option === roleFilter
-                          ? "bg-green-700 text-white font-medium"
-                          : "text-gray-700 hover:bg-gray-50"
+                          ? "bg-[#14532d] text-white font-bold"
+                          : "text-gray-700 hover:bg-[#F6F6F6]"
                       }`}
                     >
                       {option}
@@ -289,11 +302,11 @@ const RequestApproval = () => {
                 </colgroup>
               )}
               <thead>
-                <tr className="text-left text-gray-400 uppercase text-xs tracking-wider">
-                  <th className="pb-4 pr-4 font-medium">User</th>
-                  <th className="pb-4 pr-4 font-medium">Role</th>
-                  <th className="pb-4 pr-4 font-medium">Joined</th>
-                  <th className="pb-4 font-medium">Status</th>
+                <tr className="text-left text-gray-500 uppercase text-[11px] font-semibold tracking-[1.5px]">
+                  <th className="pb-4 pr-4">User</th>
+                  <th className="pb-4 pr-4">Role</th>
+                  <th className="pb-4 pr-4">Joined</th>
+                  <th className="pb-4">Status</th>
                 </tr>
               </thead>
               <tbody className="text-gray-700">
@@ -307,18 +320,18 @@ const RequestApproval = () => {
                     <tr
                       key={user.id}
                       onClick={() => openDetail(user)}
-                      className="hover:bg-gray-50 transition cursor-pointer"
+                      className="hover:bg-[#F6F6F6] transition cursor-pointer"
                     >
-                      <td className="py-4 pr-4">
+                      <td className="py-3 pr-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 shrink-0 rounded-full bg-green-700 text-white flex items-center justify-center text-xs font-bold">
+                          <div className="w-8 h-8 shrink-0 rounded-full bg-[#14532d] text-white flex items-center justify-center text-xs font-bold">
                             {(user.fullName || "?").charAt(0).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-gray-800 truncate">
+                            <p className="font-semibold text-gray-900 text-[14px] truncate">
                               {user.fullName}
                             </p>
-                            <p className="text-xs text-gray-400 truncate">
+                            <p className="text-xs text-gray-500 truncate">
                               {user.email}
                             </p>
                           </div>
@@ -326,7 +339,7 @@ const RequestApproval = () => {
                       </td>
                       <td className="pr-4">
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${roleStyle(user.role)}`}
+                          className={`px-3 py-1 rounded-full text-[11px] font-bold capitalize ${roleStyle(user.role)}`}
                         >
                           {user.role}
                         </span>
@@ -335,14 +348,14 @@ const RequestApproval = () => {
                         {formatDate(user.createdAt)}
                       </td>
                       <td>
-                        <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                        <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#FEF3C7] text-[#D97706]">
                           New
                         </span>
                       </td>
                     </tr>
                     ) : (
                       <tr key={`empty-${i}`} aria-hidden="true" className="opacity-0 pointer-events-none select-none">
-                        <td className="py-4 pr-4">
+                        <td className="py-3 pr-4">
                           <div className="flex items-center gap-3">
                             <div className="w-8 h-8 shrink-0 rounded-full bg-gray-300" />
                             <div className="min-w-0">
@@ -364,7 +377,7 @@ const RequestApproval = () => {
                 ) : (
                   Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
                     <tr key={`empty-${i}`} aria-hidden="true" className="opacity-0 pointer-events-none select-none">
-                      <td className="py-4 pr-4">
+                      <td className="py-3 pr-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 shrink-0 rounded-full bg-gray-300" />
                           <div className="min-w-0">
@@ -386,7 +399,7 @@ const RequestApproval = () => {
               </tbody>
             </table>
             {!loading && paginatedUsers.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-400 pointer-events-none">
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500 pointer-events-none">
                 No pending requests.
               </div>
             )}
@@ -402,33 +415,33 @@ const RequestApproval = () => {
                 <div
                   key={user.id}
                   onClick={() => openDetail(user)}
-                  className="bg-gray-50 rounded-xl p-4 active:bg-gray-100 transition cursor-pointer"
+                  className="bg-white border border-gray-100 rounded-[10px] p-4 active:bg-[#F6F6F6] transition cursor-pointer"
                 >
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="w-9 h-9 shrink-0 rounded-full bg-green-700 text-white flex items-center justify-center text-xs font-bold">
+                    <div className="w-9 h-9 shrink-0 rounded-full bg-[#14532d] text-white flex items-center justify-center text-xs font-bold">
                       {(user.fullName || "?").charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-sm text-gray-800 truncate">
+                      <p className="font-semibold text-[14px] text-gray-900 truncate">
                         {user.fullName}
                       </p>
-                      <p className="text-xs text-gray-400 truncate">
+                      <p className="text-xs text-gray-500 truncate">
                         {user.email}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap mb-3">
                     <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${roleStyle(user.role)}`}
+                      className={`px-3 py-1 rounded-full text-[11px] font-bold capitalize ${roleStyle(user.role)}`}
                     >
                       {user.role}
                     </span>
-                    <span className="px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-700">
+                    <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#FEF3C7] text-[#D97706]">
                       New
                     </span>
                   </div>
                   <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500">
                       Joined {formatDate(user.createdAt)}
                     </span>
                   </div>
@@ -437,7 +450,7 @@ const RequestApproval = () => {
                   <div
                     key={`empty-${i}`}
                     aria-hidden="true"
-                    className="bg-gray-50 rounded-xl p-4 opacity-0 pointer-events-none select-none"
+                    className="bg-white border border-gray-100 rounded-[10px] p-4 opacity-0 pointer-events-none select-none"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div className="w-9 h-9 shrink-0 rounded-full bg-gray-300" />
@@ -461,7 +474,7 @@ const RequestApproval = () => {
                 <div
                   key={`empty-${i}`}
                   aria-hidden="true"
-                  className="bg-gray-50 rounded-xl p-4 opacity-0 pointer-events-none select-none"
+                  className="bg-white border border-gray-100 rounded-[10px] p-4 opacity-0 pointer-events-none select-none"
                 >
                   <div className="flex items-center gap-3 mb-3">
                     <div className="w-9 h-9 shrink-0 rounded-full bg-gray-300" />
@@ -481,7 +494,7 @@ const RequestApproval = () => {
               ))
             )}
             {!loading && paginatedUsers.length === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-400 pointer-events-none">
+              <div className="absolute inset-0 flex items-center justify-center text-sm text-gray-500 pointer-events-none">
                 No pending requests.
               </div>
             )}
@@ -499,18 +512,18 @@ const RequestApproval = () => {
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}
                 aria-label="Previous page"
-                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-lg text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 transition"
+                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-[10px] text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#F6F6F6] transition"
               >
                 <IoIosArrowBack size={16} />
               </button>
-              <span className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-lg text-sm font-semibold bg-green-700 text-white">
+              <span className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-[10px] text-sm font-bold bg-[#14532d] text-white">
                 {currentPage}
               </span>
               <button
                 onClick={() => goToPage(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 aria-label="Next page"
-                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-lg text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-gray-100 transition"
+                className="min-w-11 min-h-11 sm:w-8 sm:h-8 sm:min-w-0 sm:min-h-0 flex items-center justify-center rounded-[10px] text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#F6F6F6] transition"
               >
                 <IoIosArrowForward size={16} />
               </button>
@@ -525,35 +538,35 @@ const RequestApproval = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-lg rounded-2xl shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-[fadeIn_0.15s_ease-out]"
+            className="bg-white w-full max-w-lg rounded-[10px] shadow-sm max-h-[88vh] flex flex-col overflow-hidden animate-[fadeIn_0.15s_ease-out]"
           >
-            <div className="bg-green-700 text-white px-5 sm:px-6 py-5 flex items-start justify-between gap-3 shrink-0">
+            <div className="bg-[#14532d] text-white px-5 sm:px-6 py-5 flex items-start justify-between gap-3 shrink-0">
               <div className="min-w-0">
-                <p className="text-green-100 text-xs font-medium uppercase tracking-wider mb-1">
+                <p className="text-[10px] font-bold tracking-widest text-[#bbf7d0] uppercase mb-1">
                   Applicant
                 </p>
                 <h2 className="text-lg sm:text-xl font-bold tracking-tight truncate">
                   {selectedUser.fullName}
                 </h2>
-                <span className="inline-block mt-2 bg-white/15 px-3 py-1 rounded-full text-xs font-medium capitalize">
+                <span className="inline-block mt-2 bg-white/15 px-3 py-1 rounded-full text-[11px] font-bold capitalize">
                   {selectedUser.role}
                 </span>
               </div>
               <button
                 onClick={() => setSelectedUser(null)}
-                className="text-white/80 hover:text-white hover:bg-white/10 rounded-lg p-2 -mr-2 -mt-2 transition shrink-0"
+                className="text-white/80 hover:text-white hover:bg-white/10 rounded-[10px] p-2 -mr-2 -mt-2 transition shrink-0"
                 aria-label="Close"
               >
                 <FiX size={22} />
               </button>
             </div>
             <div className="px-5 sm:px-6 pt-5 shrink-0">
-              <div className="bg-gray-100 p-1 rounded-xl flex w-fit">
+              <div className="bg-[#F6F6F6] p-1 rounded-[10px] flex w-fit">
                 <button
                   onClick={() => setDetailTab("information")}
-                  className={`min-h-9 px-5 py-2 text-sm rounded-lg transition ${
+                  className={`min-h-9 px-5 py-2 text-sm rounded-[5px] transition ${
                     detailTab === "information"
-                      ? "bg-white shadow font-semibold text-green-700"
+                      ? "bg-white shadow font-semibold text-[#14532d]"
                       : "text-gray-500 font-medium"
                   }`}
                 >
@@ -561,9 +574,9 @@ const RequestApproval = () => {
                 </button>
                 <button
                   onClick={() => setDetailTab("documents")}
-                  className={`min-h-9 px-5 py-2 text-sm rounded-lg transition ${
+                  className={`min-h-9 px-5 py-2 text-sm rounded-[5px] transition ${
                     detailTab === "documents"
-                      ? "bg-white shadow font-semibold text-green-700"
+                      ? "bg-white shadow font-semibold text-[#14532d]"
                       : "text-gray-500 font-medium"
                   }`}
                 >
@@ -620,14 +633,14 @@ const RequestApproval = () => {
             <div className="px-5 sm:px-6 py-5 border-t border-gray-100 flex gap-3 shrink-0">
               <button
                 onClick={() => openRejectModal(selectedUser)}
-                className="flex-1 min-h-11 flex items-center justify-center gap-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-sm font-semibold transition"
+                className="flex-1 min-h-11 flex items-center justify-center gap-2 bg-[#FDE8E8] text-[#DC2626] hover:opacity-90 rounded-[5px] text-sm font-semibold transition"
               >
                 <FiX />
                 Decline
               </button>
               <button
                 onClick={() => openApproveModal(selectedUser)}
-                className="flex-1 min-h-11 flex items-center justify-center gap-2 bg-green-700 text-white hover:bg-green-800 rounded-xl text-sm font-semibold transition"
+                className="flex-1 min-h-11 flex items-center justify-center gap-2 bg-[#14532d] text-white hover:opacity-90 active:opacity-85 rounded-[5px] text-sm font-semibold transition"
               >
                 <FiCheck />
                 Approve
@@ -643,11 +656,11 @@ const RequestApproval = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden animate-[fadeIn_0.15s_ease-out]"
+            className="bg-white w-full max-w-sm rounded-[10px] shadow-sm overflow-hidden animate-[fadeIn_0.15s_ease-out]"
           >
             <div
-              className={`px-6 py-5 flex items-center gap-3 text-white ${
-                actionTarget.action === "reject" ? "bg-red-600" : "bg-green-700"
+              className={`px-5 sm:px-6 py-5 flex items-center gap-3 text-white ${
+                actionTarget.action === "reject" ? "bg-[#dc2626]" : "bg-[#14532d]"
               }`}
             >
               <div className="w-9 h-9 shrink-0 rounded-full bg-white/15 flex items-center justify-center">
@@ -657,47 +670,52 @@ const RequestApproval = () => {
                   <FiUserCheck size={18} />
                 )}
               </div>
-              <h2 className="text-base font-bold tracking-tight truncate">
-                {actionTarget.action === "reject"
-                  ? "Decline Request"
-                  : "Approve Request"}
-              </h2>
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold tracking-widest text-[#bbf7d0] uppercase">
+                  {actionTarget.action === "reject" ? "Decline" : "Approval"}
+                </p>
+                <h2 className="text-base font-bold tracking-tight truncate mt-1">
+                  {actionTarget.action === "reject"
+                    ? "Decline Request"
+                    : "Approve Request"}
+                </h2>
+              </div>
             </div>
-            <div className="px-6 py-6 space-y-5">
-              <div className="flex items-center gap-3 bg-gray-50 rounded-xl p-4">
-                <div className="w-10 h-10 shrink-0 rounded-full bg-green-700 text-white flex items-center justify-center text-sm font-bold">
+            <div className="px-5 sm:px-6 py-6 space-y-5">
+              <div className="flex items-center gap-3 bg-[#F6F6F6] rounded-[10px] p-4">
+                <div className="w-10 h-10 shrink-0 rounded-full bg-[#14532d] text-white flex items-center justify-center text-sm font-bold">
                   {(actionTarget.user.fullName || "?").charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-gray-800 truncate">
+                  <p className="font-semibold text-[14px] text-gray-900 truncate">
                     {actionTarget.user.fullName}
                   </p>
-                  <p className="text-xs text-gray-400 truncate">
+                  <p className="text-xs text-gray-500 truncate">
                     {actionTarget.user.email}
                   </p>
                 </div>
               </div>
-              <p className="text-sm text-gray-700 leading-relaxed">
+              <p className="text-sm text-gray-500 leading-relaxed">
                 {actionTarget.action === "reject"
                   ? "Are you sure you want to decline this request? This cannot be undone."
                   : "This will grant the applicant access to the platform. Do you want to continue?"}
               </p>
             </div>
-            <div className="px-6 py-5 border-t border-gray-100 flex gap-3">
+            <div className="px-5 sm:px-6 py-5 border-t border-gray-100 flex gap-3">
               <button
                 onClick={closeActionModal}
                 disabled={actionLoading}
-                className="flex-1 min-h-11 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2.5 rounded-xl text-sm font-medium transition disabled:opacity-50"
+                className="flex-1 min-h-11 bg-white border border-gray-300 hover:bg-[#F6F6F6] text-[#14532d] px-4 py-2.5 rounded-[5px] text-sm font-semibold transition disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmAction}
                 disabled={actionLoading}
-                className={`flex-1 min-h-11 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60 ${
+                className={`flex-1 min-h-11 px-4 py-2.5 rounded-[5px] text-sm font-bold text-white transition disabled:opacity-60 ${
                   actionTarget.action === "reject"
-                    ? "bg-red-600 hover:bg-red-700"
-                    : "bg-green-700 hover:bg-green-800"
+                    ? "bg-[#dc2626] hover:opacity-90 active:opacity-85"
+                    : "bg-[#14532d] hover:opacity-90 active:opacity-85"
                 }`}
               >
                 {actionLoading
@@ -717,11 +735,11 @@ const RequestApproval = () => {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative bg-white p-4 sm:p-6 rounded-2xl max-w-3xl w-full shadow-xl max-h-[88vh] overflow-y-auto"
+            className="relative bg-white p-4 sm:p-6 rounded-[10px] max-w-3xl w-full shadow-sm max-h-[88vh] overflow-y-auto"
           >
             <button
               onClick={() => setPreviewFile(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-red-600 hover:bg-gray-100 rounded-lg p-1.5 transition"
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-600 hover:bg-[#F6F6F6] rounded-[10px] p-1.5 transition"
               aria-label="Close preview"
             >
               <FiX size={22} />
@@ -729,7 +747,7 @@ const RequestApproval = () => {
             <img
               src={previewFile}
               alt="Document preview"
-              className="max-h-[75vh] w-full object-contain rounded-xl"
+              className="max-h-[75vh] w-full object-contain rounded-[10px]"
             />
           </div>
         </div>
@@ -740,10 +758,10 @@ const RequestApproval = () => {
 
 const Info = ({ label, value }) => (
   <div className="min-w-0">
-    <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5">
+    <p className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase mb-1.5">
       {label}
     </p>
-    <div className="bg-gray-50 px-3.5 py-2.5 rounded-xl text-sm text-gray-800 truncate">
+    <div className="bg-[#F6F6F6] px-3.5 py-2.5 rounded-[10px] text-sm text-gray-800 truncate">
       {value || "N/A"}
     </div>
   </div>
@@ -751,12 +769,12 @@ const Info = ({ label, value }) => (
 
 const DocumentCard = ({ title, file, onPreview }) => (
   <div className="min-w-0">
-    <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1.5">
+    <p className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase mb-1.5">
       {title}
     </p>
     <div
-      className={`rounded-xl border overflow-hidden ${
-        file ? "border-gray-100" : "border-dashed border-gray-200 bg-gray-50"
+      className={`rounded-[10px] border overflow-hidden ${
+        file ? "border-gray-100" : "border-dashed border-gray-200 bg-[#F6F6F6]"
       }`}
     >
       {file ? (
@@ -764,19 +782,19 @@ const DocumentCard = ({ title, file, onPreview }) => (
           onClick={() => onPreview(file)}
           className="block w-full text-left cursor-pointer"
         >
-          <div className="h-32 w-full bg-gray-100">
+          <div className="h-32 w-full bg-[#F6F6F6]">
             <img
               src={file}
               alt={title}
               className="h-full w-full object-cover"
             />
           </div>
-          <p className="text-center text-xs text-green-700 font-semibold py-2">
+          <p className="text-center text-xs text-[#14532d] font-semibold py-2">
             Click to preview
           </p>
         </button>
       ) : (
-        <div className="h-32 flex items-center justify-center text-gray-400 text-xs">
+        <div className="h-32 flex items-center justify-center text-gray-500 text-xs">
           No file uploaded
         </div>
       )}

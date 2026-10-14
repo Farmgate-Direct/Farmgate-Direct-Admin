@@ -4,8 +4,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../FirebaseConfig";
 
-// Route-level gate only; every privileged read/write is still
-// enforced by Firestore rules on the server.
+// Page guard only. Firestore rules still do the real check.
 const ProtectedRoute = () => {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);
@@ -42,11 +41,14 @@ const ProtectedRoute = () => {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-100">
-        <div className="bg-white rounded-2xl shadow-md px-8 py-6 flex items-center gap-3">
-          <div className="w-5 h-5 rounded-full border-2 border-green-700 border-t-transparent animate-spin" />
-          <p className="text-sm font-semibold text-gray-700">Loading...</p>
-        </div>
+      <div
+        className="flex h-screen flex-col items-center justify-center gap-3"
+        style={{ backgroundColor: "#F6F6F6" }}
+      >
+        <div className="w-6 h-6 rounded-full border-2 border-[#14532d] border-t-transparent animate-spin" />
+        <p className="text-sm font-semibold" style={{ color: "#14532d" }}>
+          Loading dashboard...
+        </p>
       </div>
     );
   }

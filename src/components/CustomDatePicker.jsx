@@ -157,7 +157,7 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
               <button
                 type="button"
                 onClick={() => changeMonth(-1)}
-                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
+                className="w-9 h-9 flex items-center justify-center rounded-[10px] border border-gray-100 bg-[#F6F6F6] text-gray-500 hover:bg-[#f0fdf4] hover:text-[#14532d] transition"
                 aria-label="Previous month"
               >
                 <IoIosArrowBack size={15} />
@@ -165,7 +165,7 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
               <button
                 type="button"
                 onClick={() => changeMonth(1)}
-                className="w-9 h-9 flex items-center justify-center rounded-xl border border-gray-100 bg-gray-50 text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition"
+                className="w-9 h-9 flex items-center justify-center rounded-[10px] border border-gray-100 bg-[#F6F6F6] text-gray-500 hover:bg-[#f0fdf4] hover:text-[#14532d] transition"
                 aria-label="Next month"
               >
                 <IoIosArrowForward size={15} />
@@ -197,15 +197,15 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
                   key={idx}
                   type="button"
                   onClick={() => handleDayClick(date)}
-                  className={`h-10 w-10 mx-auto flex items-center justify-center text-[13px] rounded-xl transition ${
+                  className={`h-10 w-10 mx-auto flex items-center justify-center text-[13px] rounded-[10px] transition ${
                     !current ? "text-gray-300" : "text-gray-700"
-                  } ${inRange ? "bg-green-50 text-green-800 font-medium" : ""} ${
+                  } ${inRange ? "bg-[#f0fdf4] text-[#14532d] font-medium" : ""} ${
                     isStart || isEnd
-                      ? "bg-green-700 text-white font-bold shadow-md shadow-green-700/20 hover:bg-green-700"
-                      : "hover:bg-gray-100"
+                      ? "bg-[#14532d] text-white font-bold shadow-md shadow-[#14532d]/20 hover:bg-[#14532d]"
+                      : "hover:bg-[#F6F6F6]"
                   } ${
                     isToday && !isStart && !isEnd
-                      ? "font-bold text-green-700 ring-1 ring-green-600"
+                      ? "font-bold text-[#14532d] ring-1 ring-[#14532d]"
                       : ""
                   }`}
                 >
@@ -217,8 +217,8 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
         </div>
 
         <div className="md:w-64 shrink-0 md:border-l md:border-gray-100 md:pl-6 mt-5 md:mt-0 pt-5 md:pt-0 border-t md:border-t-0 border-gray-100 flex flex-col gap-4">
-          <div className="bg-green-50 border border-green-100 rounded-xl px-4 py-3">
-            <p className="text-[11px] font-bold text-green-700 uppercase tracking-wider">
+          <div className="bg-[#f0fdf4] border border-[#DCFCE7] rounded-[10px] px-4 py-3">
+            <p className="text-[11px] font-semibold text-[#14532d] uppercase tracking-[1.5px]">
               Selected range
             </p>
             <p className="text-sm font-bold text-gray-800 mt-1 truncate">
@@ -234,7 +234,7 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
           </div>
 
           <div>
-            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+            <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-[1.5px] mb-2">
               Quick select
             </p>
             <div className="grid grid-cols-4 md:grid-cols-2 gap-2">
@@ -248,7 +248,7 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
                   key={preset.key}
                   type="button"
                   onClick={() => applyPreset(preset.key)}
-                  className="min-h-10 px-2 py-2 rounded-xl bg-gray-100 hover:bg-green-100 hover:text-green-800 text-xs font-semibold text-gray-600 transition truncate"
+                  className="min-h-10 px-2 py-2 rounded-[10px] bg-[#F6F6F6] hover:bg-[#f0fdf4] hover:text-[#14532d] text-xs font-semibold text-gray-600 transition truncate"
                 >
                   {preset.label}
                 </button>
@@ -258,10 +258,10 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="min-w-0">
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-[1.5px] mb-1.5">
                 From
               </label>
-              <div className="flex items-center justify-between gap-2 border border-gray-100 bg-gray-50 px-3 py-3 rounded-xl">
+              <div className="flex items-center justify-between gap-2 border border-gray-100 bg-[#F6F6F6] px-3 py-3 rounded-[10px]">
                 <span className="text-xs font-medium text-gray-700 truncate">
                   {fromDate ? formatShortDate(fromDate) : "mm/dd/yyyy"}
                 </span>
@@ -269,10 +269,10 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
               </div>
             </div>
             <div className="min-w-0">
-              <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-[1.5px] mb-1.5">
                 To
               </label>
-              <div className="flex items-center justify-between gap-2 border border-gray-100 bg-gray-50 px-3 py-3 rounded-xl">
+              <div className="flex items-center justify-between gap-2 border border-gray-100 bg-[#F6F6F6] px-3 py-3 rounded-[10px]">
                 <span className="text-xs font-medium text-gray-700 truncate">
                   {toDate ? formatShortDate(toDate) : "mm/dd/yyyy"}
                 </span>
@@ -285,14 +285,14 @@ const CustomDatePicker = ({ startDate, endDate, onChange, onClear, onApply }) =>
             <button
               type="button"
               onClick={onApply}
-              className="w-full min-h-12 bg-green-700 hover:bg-green-800 active:scale-[0.99] text-white text-sm font-bold py-3 rounded-xl transition shadow-sm"
+              className="w-full min-h-12 bg-[#14532d] hover:opacity-90 active:scale-[0.99] text-white text-sm font-bold py-3 rounded-[5px] transition shadow-sm"
             >
               Apply Date Range
             </button>
             <button
               type="button"
               onClick={onClear}
-              className="w-full min-h-9 text-xs font-semibold text-gray-400 hover:text-red-600 transition"
+              className="w-full min-h-9 text-xs font-semibold text-gray-400 hover:text-[#DC2626] transition"
             >
               Clear selection
             </button>
@@ -323,23 +323,26 @@ export const CustomDateModal = ({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-sm md:max-w-2xl rounded-2xl shadow-2xl overflow-hidden animate-[fadeIn_0.15s_ease-out]"
+        className="bg-white w-full max-w-sm md:max-w-2xl rounded-[10px] shadow-2xl overflow-hidden animate-[fadeIn_0.15s_ease-out]"
       >
-        <div className="flex items-center gap-3 px-5 sm:px-6 py-4 border-b border-gray-100">
-          <div className="w-10 h-10 shrink-0 rounded-xl bg-green-100 text-green-700 flex items-center justify-center">
+        <div className="flex items-center gap-3 px-5 sm:px-6 py-4 bg-[#14532d]">
+          <div className="w-10 h-10 shrink-0 rounded-full bg-white/15 text-white flex items-center justify-center">
             <FiCalendar size={17} />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="font-bold text-gray-800 text-[15px] tracking-tight truncate">
+            <p className="text-[10px] font-bold tracking-[0.2em] text-[#bbf7d0] uppercase">
+              Date Range
+            </p>
+            <h3 className="font-bold text-white text-[15px] tracking-tight truncate">
               {title}
             </h3>
-            <p className="text-xs text-gray-400 truncate mt-0.5">
+            <p className="text-xs text-[#dcfce7] truncate mt-0.5">
               {fallbackSubtitle}
             </p>
           </div>
           <button
             onClick={onClose}
-            className="shrink-0 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl p-2 transition"
+            className="shrink-0 text-white/80 hover:text-white hover:bg-white/10 rounded-[10px] p-2 transition"
             aria-label="Close"
           >
             <FiX size={18} />
