@@ -4,7 +4,9 @@ import { FaWallet } from "react-icons/fa";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FiClock, FiSmartphone, FiX } from "react-icons/fi";
 import {
-  getAdminWalletOverview,
+  getAdminPayoutAccount,
+  getAdminTransactions,
+  getAdminWallet,
   requestAdminWithdrawal,
   saveAdminPayoutAccount,
 } from "../services/walletService";
@@ -105,16 +107,20 @@ const Wallet = () => {
     try {
       if (isFirstLoad) setLoading(true);
       setError(null);
-      // One request for wallet + payout + history.
-      const overview = await getAdminWalletOverview();
-      setWallet(overview.wallet);
-      setWithdrawable(overview.withdrawableAmount);
-      setMinimumWithdrawal(overview.minimumWithdrawal);
-      setTransactions(overview.transactions);
-      setPayout(overview.payoutAccount);
-      if (overview.payoutAccount) {
+      // One shared request behind the 3 calls.
+      const [w, txs, pa] = await Promise.all([
+        getAdminWallet(),
+        getAdminTransactions(),
+        getAdminPayoutAccount(),
+      ]);
+      setWallet(w.wallet);
+      setWithdrawable(w.withdrawableAmount);
+      setMinimumWithdrawal(w.minimumWithdrawal);
+      setTransactions(txs);
+      setPayout(pa);
+      if (pa) {
         setForm({
-          accountName: overview.payoutAccount.accountName || "",
+          accountName: pa.accountName || "",
           accountNumber: "",
         });
       }
