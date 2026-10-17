@@ -1,5 +1,7 @@
+// Toast notification helpers.
 import { sileo } from "sileo";
 
+// Show success toast message.
 export const toastSuccess = (title, description = "") =>
   sileo.success({
     title,
@@ -12,6 +14,7 @@ export const toastSuccess = (title, description = "") =>
     },
   });
 
+// Show error toast message.
 export const toastError = (title, description = "") =>
   sileo.error({
     title,

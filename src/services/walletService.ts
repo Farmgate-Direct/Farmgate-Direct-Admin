@@ -1,12 +1,5 @@
-// Admin wallet actions.
+// Admin wallet: balances, transactions, payout account, and withdrawals.
 import { auth } from "../FirebaseConfig";
-import type {
-  AdminPayoutAccountType,
-  AdminWalletOverview,
-  AdminWalletType,
-  AdminWithdrawalType,
-  WalletTransaction,
-} from "../types/wallet";
 
 const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
 
@@ -24,6 +17,8 @@ const checkName = (name: string) => {
   }
 };
 
+// Turns an international GCash number into the local 09XXXXXXXXX form, and
+// rejects anything that is not a valid mobile number.
 const cleanNumber = (v: unknown) => {
   const raw = String(v ?? "").trim();
   if (raw === "") return "";
@@ -44,6 +39,8 @@ const checkAmount = (amount: number | undefined) => {
   return Math.round(amount * 100) / 100;
 };
 
+// Sends a signed-in request to the backend and returns the parsed body. A
+// timeout is retried once by default, which covers the Render cold start.
 const authedFetch = async (
   path: string,
   options: RequestInit = {},
@@ -53,7 +50,7 @@ const authedFetch = async (
   if (!BACKEND_URL) throw new Error("VITE_BACKEND_URL is not configured.");
   const user = auth.currentUser;
   if (!user) throw new Error("Not signed in.");
-  // One token per overview call.
+  // The token is fetched once per call, so the overview stays a single roundtrip.
   const token = await user.getIdToken();
 
   const attempt = async () => {
@@ -96,7 +93,7 @@ const authedFetch = async (
   try {
     return await attempt();
   } catch (e: any) {
-    // One auto-retry covers the Render cold-start window.
+    // One retry after a short wait, so a cold start does not look like a failure.
     if (retryOnTimeout && e?.name === "AbortError") {
       await new Promise((r) => setTimeout(r, 2000));
       return await attempt();
@@ -105,17 +102,41 @@ const authedFetch = async (
   }
 };
 
-// One request for wallet + payout + history.
-// Falls back to 3 requests when the server has no overview route yet.
-const fetchOverview = async (): Promise<AdminWalletOverview> => {
+// Returns the admin wallet balance and the minimum allowed withdrawal.
+export const getAdminWallet = async () => {
+  const data = await authedFetch("/admin/wallet");
+  return {
+    wallet: data.wallet,
+    withdrawableAmount: Number(data.withdrawableAmount || 0),
+    minimumWithdrawal: Number(data.minimumWithdrawal || 1),
+  };
+};
+
+// Returns the wallet transaction history.
+export const getAdminTransactions = async () => {
+  const data = await authedFetch("/admin/transactions");
+  return Array.isArray(data.transactions) ? data.transactions : [];
+};
+
+// Returns the admin GCash payout account, or null when none is set up.
+export const getAdminPayoutAccount = async () => {
+  const data = await authedFetch("/admin/payout-account");
+  return data.payoutAccount || null;
+};
+
+// Everything the wallet screen needs in one roundtrip, where the server checks
+// auth once and then fetches the wallet, payout account, and history in parallel.
+// If the backend has not been redeployed yet and has no /admin/overview route,
+// this falls back to the three older requests.
+export const getAdminWalletOverview = async () => {
   try {
     const data = await authedFetch("/admin/overview");
     return {
-      wallet: data.wallet as AdminWalletType,
-      payoutAccount: (data.payoutAccount || null) as AdminPayoutAccountType | null,
-      transactions: (Array.isArray(data.transactions)
+      wallet: data.wallet,
+      payoutAccount: data.payoutAccount || null,
+      transactions: Array.isArray(data.transactions)
         ? data.transactions
-        : []) as WalletTransaction[],
+        : [],
       withdrawableAmount: Number(data.withdrawableAmount || 0),
       minimumWithdrawal: Number(data.minimumWithdrawal || 1),
     };
@@ -131,78 +152,20 @@ const fetchOverview = async (): Promise<AdminWalletOverview> => {
       authedFetch("/admin/payout-account", {}, REQUEST_TIMEOUT, false),
     ]);
     return {
-      wallet: w.wallet as AdminWalletType,
-      payoutAccount: (pa.payoutAccount || null) as AdminPayoutAccountType | null,
-      transactions: (Array.isArray(txs.transactions)
-        ? txs.transactions
-        : []) as WalletTransaction[],
+      wallet: w.wallet,
+      payoutAccount: pa.payoutAccount || null,
+      transactions: Array.isArray(txs.transactions) ? txs.transactions : [],
       withdrawableAmount: Number(w.withdrawableAmount || 0),
       minimumWithdrawal: Number(w.minimumWithdrawal || 1),
     };
   }
 };
 
-// Shared loader: parallel calls reuse one in-flight request, and results
-// are cached briefly so refocus is instant.
-const OVERVIEW_CACHE_MS = 8000;
-let cachedOverview: AdminWalletOverview | null = null;
-let cachedAt = 0;
-let inflightOverview: Promise<AdminWalletOverview> | null = null;
-
-const loadSharedOverview = (): Promise<AdminWalletOverview> => {
-  if (cachedOverview && Date.now() - cachedAt < OVERVIEW_CACHE_MS) {
-    return Promise.resolve(cachedOverview);
-  }
-  if (!inflightOverview) {
-    inflightOverview = fetchOverview().then((overview) => {
-      cachedOverview = overview;
-      cachedAt = Date.now();
-      inflightOverview = null;
-      return overview;
-    }).catch((e) => {
-      inflightOverview = null;
-      throw e;
-    });
-  }
-  return inflightOverview;
-};
-
-// Clear cache after writes so the next read is fresh.
-const invalidateCache = () => {
-  cachedOverview = null;
-  cachedAt = 0;
-};
-
-// Get admin wallet balance.
-export const getAdminWallet = async (): Promise<{
-  wallet: AdminWalletType;
-  withdrawableAmount: number;
-  minimumWithdrawal: number;
-}> => {
-  const overview = await loadSharedOverview();
-  return {
-    wallet: overview.wallet,
-    withdrawableAmount: overview.withdrawableAmount,
-    minimumWithdrawal: overview.minimumWithdrawal,
-  };
-};
-
-// Get admin wallet transactions.
-export const getAdminTransactions = async (): Promise<WalletTransaction[]> => {
-  const overview = await loadSharedOverview();
-  return overview.transactions;
-};
-
-// Get admin payout account.
-export const getAdminPayoutAccount = async (): Promise<AdminPayoutAccountType | null> => {
-  const overview = await loadSharedOverview();
-  return overview.payoutAccount;
-};
-
+// Creates or updates the admin GCash payout account.
 export const saveAdminPayoutAccount = async (input: {
   accountName: string;
   accountNumber: string;
-}): Promise<AdminPayoutAccountType> => {
+}) => {
   const accountName = cleanName(input?.accountName);
   checkName(accountName);
   const accountNumber = cleanNumber(input?.accountNumber);
@@ -210,14 +173,12 @@ export const saveAdminPayoutAccount = async (input: {
     method: "PUT",
     body: JSON.stringify({ accountName, accountNumber }),
   });
-  invalidateCache();
-  return data.payoutAccount as AdminPayoutAccountType;
+  return data.payoutAccount;
 };
 
-export const requestAdminWithdrawal = async (amount?: number): Promise<{
-  withdrawal: AdminWithdrawalType;
-  withdrawableAmount: number;
-}> => {
+// Requests a payout. Always pass the amount confirmed on screen, because the
+// backend rejects anything larger than the current withdrawable balance.
+export const requestAdminWithdrawal = async (amount?: number) => {
   const clean = amount === undefined || amount === null || String(amount).trim() === ""
     ? undefined
     : checkAmount(Number(amount));
@@ -229,10 +190,8 @@ export const requestAdminWithdrawal = async (amount?: number): Promise<{
     },
     WITHDRAW_TIMEOUT,
   );
-  invalidateCache();
   return {
-    withdrawal: data.withdrawal as AdminWithdrawalType,
+    withdrawal: data.withdrawal,
     withdrawableAmount: Number(data.withdrawableAmount || 0),
   };
 };
-

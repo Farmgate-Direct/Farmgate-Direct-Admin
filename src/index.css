@@ -1,3 +1,4 @@
+/* Admin theme styles. */
 @import "tailwindcss";
 
 @theme {
@@ -28,7 +29,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Pointer cursor sa lahat ng puwedeng i-click sa admin */
 button:not(:disabled),
 a,
 select,
@@ -68,7 +68,6 @@ a[aria-disabled="true"] {
   }
 }
 
-/* Mobile cards use soft shadow-sm, not heavy shadows */
 .fg-card {
   background: #ffffff;
   border: 1px solid #f3f4f6;

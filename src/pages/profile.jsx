@@ -1,3 +1,4 @@
+// Admin profile settings page.
 import { useEffect, useState } from "react";
 import { FaUser, FaUserCog } from "react-icons/fa";
 import {
@@ -30,6 +31,7 @@ const SkeletonLine = ({ className = "" }) => (
   <div className={`animate-pulse bg-gray-200 rounded ${className}`} />
 );
 
+// Handle Firestore and Date timestamps.
 const toMillis = (ts) => {
   if (!ts) return 0;
   try {
@@ -58,6 +60,7 @@ const formatDateTime = (ts) => {
   }
 };
 
+// Show relative time labels.
 const formatRelative = (ts) => {
   const millis = toMillis(ts);
   if (!millis) return "—";
@@ -157,7 +160,7 @@ const ACTIVITY_STYLE = {
   export_report: { icon: <FiDownload size={14} />, bg: "bg-[#eff6ff] text-[#2563EB]" },
   update_payout_account: { icon: <FiEdit size={14} />, bg: "bg-[#eff6ff] text-[#2563EB]" },
   admin_withdraw: { icon: <FiDownload size={14} />, bg: "bg-[#DCFCE7] text-[#14532d]" },
-  // Old accounts without activity logs.
+  // Support old accounts without logs.
   admin_created: { icon: <FiUserPlus size={14} />, bg: "bg-[#DCFCE7] text-[#14532d]" },
   approved: { icon: <FiUserCheck size={14} />, bg: "bg-[#DCFCE7] text-[#14532d]" },
   banned: { icon: <FiUserX size={14} />, bg: "bg-[#FDE8E8] text-[#DC2626]" },
@@ -180,6 +183,7 @@ const Profile = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwSaving, setPwSaving] = useState(false);
 
+  // Fetch logs with fallback events.
   const loadActivity = async (adminsData) => {
     try {
       setActivitiesLoading(true);
@@ -271,6 +275,7 @@ const Profile = () => {
         }
       });
 
+      // Sort events newest first.
       events.sort((a, b) => b.millis - a.millis);
       setActivities(events.slice(0, 15));
     } catch {
@@ -297,6 +302,7 @@ const Profile = () => {
     loadAdmins();
   }, []);
 
+  // Validate name before saving.
   const handleSaveProfile = async () => {
     if (!currentAdmin) return;
     const trimmed = profileName.trim();
@@ -345,6 +351,7 @@ const Profile = () => {
     }
     try {
       setPwSaving(true);
+      // Reauthenticate before password change.
       const credential = EmailAuthProvider.credential(
         user.email,
         currentPassword,
@@ -401,6 +408,7 @@ const Profile = () => {
 
   return (
     <>
+      {/* Page banner */}
       <div className="mb-5 sm:mb-6 lg:mb-8 rounded-[10px] p-[18px] sm:p-6 lg:p-8 bg-[#14532d] flex justify-between items-center gap-4">
         <div className="min-w-0">
           <p className="text-[10px] font-bold tracking-[0.2em] text-[#bbf7d0] uppercase">
@@ -417,6 +425,7 @@ const Profile = () => {
       </div>
       <div className="flex flex-col gap-4 sm:gap-5 min-w-0">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 min-w-0">
+          {/* Profile card */}
           <div className="bg-white rounded-[10px] shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6 min-w-0">
             <div className="flex items-center gap-2.5 mb-5">
               <div className="w-9 h-9 rounded-[10px] bg-[#DCFCE7] text-[#14532d] flex items-center justify-center shrink-0">

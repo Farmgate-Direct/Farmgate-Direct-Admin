@@ -4,9 +4,7 @@ import { FaWallet } from "react-icons/fa";
 import { IoIosArrowBack, IoIosArrowForward } from "react-icons/io";
 import { FiClock, FiSmartphone, FiX } from "react-icons/fi";
 import {
-  getAdminPayoutAccount,
-  getAdminTransactions,
-  getAdminWallet,
+  getAdminWalletOverview,
   requestAdminWithdrawal,
   saveAdminPayoutAccount,
 } from "../services/walletService";
@@ -97,7 +95,7 @@ const Wallet = () => {
   const lastReloadRef = useRef(0);
 
   const load = useCallback(async () => {
-    // Skip calls less than 2s apart.
+    // Debounce: ignore overlapping calls and refocus storms (<2s apart).
     if (loadingRef.current) return;
     if (Date.now() - lastReloadRef.current < 2000) return;
     loadingRef.current = true;
@@ -107,20 +105,16 @@ const Wallet = () => {
     try {
       if (isFirstLoad) setLoading(true);
       setError(null);
-      // One shared request behind the 3 calls.
-      const [w, txs, pa] = await Promise.all([
-        getAdminWallet(),
-        getAdminTransactions(),
-        getAdminPayoutAccount(),
-      ]);
-      setWallet(w.wallet);
-      setWithdrawable(w.withdrawableAmount);
-      setMinimumWithdrawal(w.minimumWithdrawal);
-      setTransactions(txs);
-      setPayout(pa);
-      if (pa) {
+      // Single roundtrip: wallet + payout + history (1 auth on server).
+      const overview = await getAdminWalletOverview();
+      setWallet(overview.wallet);
+      setWithdrawable(overview.withdrawableAmount);
+      setMinimumWithdrawal(overview.minimumWithdrawal);
+      setTransactions(overview.transactions);
+      setPayout(overview.payoutAccount);
+      if (overview.payoutAccount) {
         setForm({
-          accountName: pa.accountName || "",
+          accountName: overview.payoutAccount.accountName || "",
           accountNumber: "",
         });
       }
@@ -137,7 +131,7 @@ const Wallet = () => {
     load();
   }, [load]);
 
-  // Refresh on tab focus, no spinner after first load.
+  // Silent refresh on tab refocus (no spinner after first load).
   useEffect(() => {
     const handleFocus = () => {
       load();

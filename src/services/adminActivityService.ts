@@ -1,3 +1,4 @@
+// The activity log that records what each admin did.
 import {
   addDoc,
   collection,
@@ -11,6 +12,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../FirebaseConfig";
 
+// The kinds of actions that can appear in the log.
 export type AdminActivityAction =
   | "login"
   | "logout"
@@ -30,6 +32,8 @@ const MAX_COUNT = 50;
 
 const activitiesRef = collection(db, "adminActivities");
 
+// Looks up who performed the action, falling back to the signed-in account when
+// the admin document cannot be read.
 const resolveActor = async () => {
   const user = auth.currentUser;
   if (!user) return { id: "unknown", name: "Administrator", email: "" };
@@ -49,6 +53,9 @@ const resolveActor = async () => {
   return { id: user.uid, name: user.email || "Administrator", email: user.email || "" };
 };
 
+// Writes one entry to the activity log. Every field is trimmed to a maximum
+// length, and a failed write is only logged so it never breaks the action the
+// admin was performing.
 export const logAdminActivity = async (
   action: AdminActivityAction,
   description: string,
@@ -79,6 +86,7 @@ export const logAdminActivity = async (
   }
 };
 
+// Returns the most recent activity entries, newest first.
 export const getRecentAdminActivities = async (count = 15) => {
   const safeCount = Math.min(Math.max(Math.floor(count) || 15, 1), MAX_COUNT);
   try {

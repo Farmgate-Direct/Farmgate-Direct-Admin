@@ -1,3 +1,4 @@
+// Admin dashboard overview page.
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { FaShoppingCart } from "react-icons/fa";
 import { TbLayoutDashboardFilled } from "react-icons/tb";
@@ -28,6 +29,7 @@ const statusStyles = {
   cancelled: "bg-[#FDE8E8] text-[#DC2626]",
 };
 
+// Normalize status for style lookup.
 const getStatusStyle = (status) =>
   statusStyles[status?.toLowerCase()] || "bg-gray-100 text-gray-700";
 
@@ -111,6 +113,7 @@ const TransactionCardSkeleton = () => (
   </div>
 );
 
+// Handle Firestore and Date timestamps.
 const toMillis = (createdAt) => {
   if (!createdAt) return 0;
   if (createdAt.toDate) {
@@ -149,13 +152,14 @@ const Dashboard = () => {
     try {
       setLoading(true);
       setError(null);
+      // Fetch all dashboard data together.
       const [countsData, summaryData, pendingData, usersData, ordersData] =
         await Promise.all([
           getApprovedUserCounts(),
           getOrdersSummary(),
           getPendingUsers(),
           getRecentActivity(),
-          getRecentOrders(5),
+          getRecentOrders(7),
         ]);
       setUserCounts(countsData);
       setOrdersSummary(summaryData);
@@ -174,7 +178,7 @@ const Dashboard = () => {
     loadDashboard();
   }, [loadDashboard]);
 
-  // Refresh when the tab is focused again.
+  // Reload data when tab refocused.
   useEffect(() => {
     const handleFocus = () => {
       loadDashboard();
@@ -207,6 +211,19 @@ const Dashboard = () => {
   const getFarmerName = (order) =>
     order.farmerName || order.farmName || "N/A";
 
+  // Order amount only (excludes delivery fee). Same as Orders page.
+  const getOrderAmount = (order) => {
+    if (!order) return 0;
+    if (order.subTotal != null && !Number.isNaN(Number(order.subTotal)))
+      return Number(order.subTotal) || 0;
+    if (order.subtotal != null && !Number.isNaN(Number(order.subtotal)))
+      return Number(order.subtotal) || 0;
+    const total = Number(order.total ?? 0) || 0;
+    const fee = Number(order.deliveryFee ?? 0) || 0;
+    return Math.max(0, total - fee);
+  };
+
+  // Shorten product list display.
   const getProduceSummary = (products) => {
     if (!products || products.length === 0) return "N/A";
     const names = products.map((p) => p.name).filter(Boolean);
@@ -215,6 +232,7 @@ const Dashboard = () => {
     return `${names[0]}, ${names[1]} +${names.length - 2} more`;
   };
 
+  // Merge and sort recent activity.
   const activityFeed = useMemo(() => {
     const registrations = recentUsers.map((user) => ({
       key: `user-${user.id}`,
@@ -241,44 +259,8 @@ const Dashboard = () => {
     });
     return [...registrations, ...orderEvents]
       .sort((a, b) => b.millis - a.millis)
-      .slice(0, 6);
+      .slice(0, 7);
   }, [recentUsers, recentOrders]);
-
-  // Sample list when there is no activity yet.
-  const PREVIEW_ACTIVITY = [
-    {
-      key: "preview-act-1",
-      title: "Juan Dela Cruz registered as farmer",
-      sub: `Submitted on ${formatDate(new Date())}`,
-    },
-    {
-      key: "preview-act-2",
-      title: "Order delivered — Papaya",
-      sub: `Pam → Renz Galoy · ${formatDate(new Date())}`,
-    },
-    {
-      key: "preview-act-3",
-      title: "Maria Santos registered as buyer",
-      sub: `Submitted on ${formatDate(new Date())}`,
-    },
-    {
-      key: "preview-act-4",
-      title: "Order pending — Patatas (Potato)",
-      sub: `mj → Renz Galoy · ${formatDate(new Date())}`,
-    },
-    {
-      key: "preview-act-5",
-      title: "Jose Mendoza registered as farmer",
-      sub: `Submitted on ${formatDate(new Date())}`,
-    },
-    {
-      key: "preview-act-6",
-      title: "Order processing — Papaya",
-      sub: `Pam → Renz Galoy · ${formatDate(new Date())}`,
-    },
-  ];
-  const visibleActivityFeed =
-    activityFeed.length > 0 ? activityFeed : PREVIEW_ACTIVITY;
 
   const displayOrders = useMemo(() => {
     return recentOrders.slice(0, 5);
@@ -353,6 +335,7 @@ const Dashboard = () => {
           </button>
         </div>
       )}
+      {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
@@ -390,6 +373,7 @@ const Dashboard = () => {
               </div>
             ))}
       </div>
+      {/* Activity panels */}
       <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 mt-4 sm:mt-5">
         <div className="flex-1 min-w-0 bg-white rounded-[10px] shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6">
           <h2 className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase mb-4">
@@ -404,9 +388,9 @@ const Dashboard = () => {
                 </div>
               ))}
             </div>
-          ) : visibleActivityFeed.length > 0 ? (
+          ) : activityFeed.length > 0 ? (
             <ul className="text-sm text-gray-700 space-y-4">
-              {visibleActivityFeed.map((item) => (
+              {activityFeed.map((item) => (
                 <li key={item.key} className="flex gap-2.5">
                   <span className="mt-1.5 w-1.5 h-1.5 shrink-0 rounded-full" style={{ backgroundColor: "#14532d" }} />
                   <div className="min-w-0">
@@ -448,7 +432,7 @@ const Dashboard = () => {
             </div>
           ) : pendingUsers.length > 0 ? (
             <div className="space-y-4">
-              {pendingUsers.slice(0, 6).map((user) => (
+              {pendingUsers.slice(0, 7).map((user) => (
                 <div key={user.id} className="flex items-center gap-3">
                   <div className="w-9 h-9 shrink-0 rounded-full text-white flex items-center justify-center text-xs font-bold" style={{ backgroundColor: "#14532d" }}>
                     {user.fullName?.charAt(0)?.toUpperCase() ?? "?"}
@@ -510,6 +494,7 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+      {/* Recent transactions */}
       <div className="bg-white rounded-[10px] shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6 mt-4 sm:mt-5 min-w-0">
         <h2 className="text-[11px] font-semibold tracking-[1.5px] text-gray-500 uppercase mb-4 sm:mb-6">
           Recent Transactions
@@ -542,7 +527,7 @@ const Dashboard = () => {
                         {getProduceSummary(order.products)}
                       </td>
                       <td className="pr-4 font-semibold text-gray-800 whitespace-nowrap">
-                        ₱{(order.total ?? 0).toLocaleString()}
+                        ₱{getOrderAmount(order).toLocaleString()}
                       </td>
                       <td className="pr-4">
                         <span
@@ -599,7 +584,7 @@ const Dashboard = () => {
                   </p>
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-sm text-gray-800">
-                      ₱{(order.total ?? 0).toLocaleString()}
+                      ₱{getOrderAmount(order).toLocaleString()}
                     </span>
                     <span className="text-xs text-gray-400">
                       {formatDate(order.createdAt)}

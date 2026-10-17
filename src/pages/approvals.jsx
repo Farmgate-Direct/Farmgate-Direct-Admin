@@ -1,3 +1,4 @@
+// Approve or reject new users.
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa6";
 import { FaUserCheck } from "react-icons/fa";
@@ -72,6 +73,7 @@ const RequestApproval = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Fetch pending users from server.
   const loadUsers = async () => {
     try {
       setLoading(true);
@@ -88,6 +90,7 @@ const RequestApproval = () => {
     loadUsers();
   }, []);
 
+  // Filter users by search and role.
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
       const fullName = user.fullName || "";
@@ -118,6 +121,7 @@ const RequestApproval = () => {
     return filteredUsers.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredUsers, currentPage]);
 
+  // Pad list to keep table height steady.
   const displayUsers = useMemo(() => {
     const list = [...paginatedUsers];
     while (list.length < ITEMS_PER_PAGE) list.push(null);
@@ -129,6 +133,7 @@ const RequestApproval = () => {
     setCurrentPage(page);
   };
 
+  // Lock column widths on first page.
   useEffect(() => {
     if (loading || currentPage !== 1 || paginatedUsers.length === 0) return;
     const table = tableRef.current;
@@ -144,6 +149,7 @@ const RequestApproval = () => {
     );
   }, [loading, currentPage, paginatedUsers]);
 
+  // Handle Firestore timestamp or string date.
   const formatDate = (createdAt) => {
     if (!createdAt) return "N/A";
     const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
@@ -167,6 +173,7 @@ const RequestApproval = () => {
     setActionTarget(null);
   };
 
+  // Approve or reject selected user.
   const confirmAction = async () => {
     if (!actionTarget) return;
     const { user, action } = actionTarget;
@@ -218,6 +225,7 @@ const RequestApproval = () => {
 
   return (
     <>
+      {/* Page header. */}
       <div
         className="rounded-[10px] p-[18px] sm:p-6 lg:p-8 flex justify-between items-center mb-5 sm:mb-6 lg:mb-8"
         style={{ backgroundColor: "#14532d" }}
@@ -237,6 +245,7 @@ const RequestApproval = () => {
           <FaUserCheck size={30} color="#14532d" />
         </div>
       </div>
+      {/* User list and pagination. */}
       <div className="bg-white rounded-[10px] shadow-sm border border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 sm:p-5 lg:p-6 border-b border-gray-100">
           <div className="relative w-full md:w-72">
@@ -531,6 +540,7 @@ const RequestApproval = () => {
           )}
         </div>
       </div>
+      {/* User detail modal. */}
       {selectedUser && (
         <div
           onClick={() => setSelectedUser(null)}
@@ -649,6 +659,7 @@ const RequestApproval = () => {
           </div>
         </div>
       )}
+      {/* Confirm action modal. */}
       {actionTarget && (
         <div
           onClick={closeActionModal}
@@ -728,6 +739,7 @@ const RequestApproval = () => {
           </div>
         </div>
       )}
+      {/* Document preview modal. */}
       {previewFile && (
         <div
           onClick={() => setPreviewFile(null)}

@@ -1,4 +1,4 @@
-// Dashboard counts and summaries.
+// Counts and totals shown on the admin dashboard.
 import {
   collection,
   getDocs,
@@ -16,13 +16,15 @@ const COMMISSION_RATE = 0.03;
 
 const norm = (value: any) => (value || "").toString().trim().toLowerCase();
 
-// Commission is 3% of subtotal only, delivery fee excluded.
-// Use commissionAmount first, fall back to subtotal for old orders.
+// Reads a number that may be stored as a string, returning null when it is not
+// a usable value.
 const numOrNull = (value: any): number | null => {
   const n = Number(value);
   return Number.isFinite(n) ? n : null;
 };
 
+// The order amount without the delivery fee, since commission is charged on
+// the subtotal only.
 const getOrderSubtotal = (data: any): number => {
   const saved =
     numOrNull(data?.subTotal) ?? numOrNull(data?.subtotal) ?? null;
@@ -36,19 +38,22 @@ const getOrderSubtotal = (data: any): number => {
     );
     if (Number.isFinite(sum) && sum >= 0) return Math.round(sum * 100) / 100;
   }
-  // Last resort: total minus delivery fee (never total alone).
+  // The last resort is the total minus the delivery fee, never the total alone.
   const total = Number(data?.total) || 0;
   const fee = Number(data?.deliveryFee) || 0;
   return Math.max(0, Math.round((total - fee) * 100) / 100);
 };
 
+// The commission is 3% of the subtotal only, so the delivery fee never counts.
+// Older orders without a stored commissionAmount are calculated from the
+// subtotal instead.
 const getOrderCommission = (data: any): number => {
   const saved = numOrNull(data?.commissionAmount);
   if (saved !== null && saved >= 0) return saved;
   return Math.round(getOrderSubtotal(data) * COMMISSION_RATE * 100) / 100;
 };
 
-// Get users waiting approval.
+// Returns the users still waiting for approval, newest first.
 export const getPendingUsers = async () => {
   try {
     const snapshot = await getDocs(usersRef);
@@ -70,11 +75,11 @@ export const getPendingUsers = async () => {
   }
 };
 
-// Get latest user signups.
+// Returns the newest signups.
 export const getRecentActivity = async () => {
   try {
     const snapshot = await getDocs(
-      query(usersRef, orderBy("createdAt", "desc"), limit(5))
+      query(usersRef, orderBy("createdAt", "desc"), limit(7))
     );
     return snapshot.docs.map((doc) => ({
       id: doc.id,
@@ -86,7 +91,7 @@ export const getRecentActivity = async () => {
   }
 };
 
-// Count approved farmers and buyers.
+// Counts the approved farmers and buyers.
 export const getApprovedUserCounts = async () => {
   try {
     const snapshot = await getDocs(usersRef);
@@ -106,7 +111,8 @@ export const getApprovedUserCounts = async () => {
   }
 };
 
-// Get order totals and earnings.
+// Returns the order totals, the platform earnings from finished orders, and how
+// many orders sit in each status.
 export const getOrdersSummary = async () => {
   try {
     const snapshot = await getDocs(ordersRef);

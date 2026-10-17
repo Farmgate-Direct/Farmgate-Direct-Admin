@@ -1,3 +1,4 @@
+// Approving, rejecting, and listing users waiting for approval.
 import {
   collection,
   deleteDoc,
@@ -12,6 +13,8 @@ const BACKEND_URL = (import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "")
 
 const usersCollection = collection(db, "users");
 
+// Rejects a real id before it reaches the backend, so a bad value cannot end up
+// in a request path.
 const assertUid = (uid: string) => {
   if (typeof uid !== "string" || uid.length === 0 || uid.length > 128) {
     throw new Error("Invalid user id.");
@@ -20,6 +23,7 @@ const assertUid = (uid: string) => {
 
 const norm = (value: any) => (value || "").toString().trim().toLowerCase();
 
+// Returns the users still waiting for approval.
 export const getPendingUsers = async () => {
   const snapshot = await getDocs(usersCollection);
   return snapshot.docs
@@ -30,12 +34,12 @@ export const getPendingUsers = async () => {
     .filter((user: any) => norm(user.status) === "pending");
 };
 
+// Approves a pending registration.
 export const approveUser = async (uid: string) => {
   assertUid(uid);
 
-  // Via backend para mag-send din ng approval email. Kung walang
-  // backend na naka-configure (local dev), Firestore update lang
-  // tulad ng dati (walang email).
+  // The backend handles the auth account too. Without a backend URL only the
+  // Firestore document is updated.
   if (BACKEND_URL) {
     const user = auth.currentUser;
     if (!user) throw new Error("Not signed in.");
@@ -60,12 +64,12 @@ export const approveUser = async (uid: string) => {
   });
 };
 
+// Rejects a pending registration and removes the account.
 export const rejectUser = async (uid: string) => {
   assertUid(uid);
 
-  // Via backend para mabura rin ang Firebase Auth account at magamit
-  // muli ang email. Kung walang backend na naka-configure (local dev),
-  // Firestore doc lang ang mabubura tulad ng dati.
+  // The backend removes the auth account too. Without a backend URL only the
+  // Firestore document is deleted.
   if (BACKEND_URL) {
     const user = auth.currentUser;
     if (!user) throw new Error("Not signed in.");

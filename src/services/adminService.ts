@@ -1,8 +1,10 @@
+// Reading and updating the profile of the signed-in admin.
 import { doc, getDoc, serverTimestamp, updateDoc } from "firebase/firestore";
 import { auth, db } from "../FirebaseConfig";
 
 const MAX_NAME_LENGTH = 100;
 
+// Rejects a bad id before it can reach Firestore.
 const assertUid = (uid: string) => {
   if (typeof uid !== "string" || uid.length === 0 || uid.length > 128) {
     throw new Error("Invalid admin id.");
@@ -18,6 +20,7 @@ const assertName = (name: string) => {
   }
 };
 
+// Returns the document of the signed-in admin.
 export const getCurrentAdmin = async () => {
   const user = auth.currentUser;
   if (!user) {
@@ -34,6 +37,7 @@ export const getCurrentAdmin = async () => {
   };
 };
 
+// Records when the admin last signed in.
 export const updateLastLogin = async (uid: string) => {
   assertUid(uid);
   await updateDoc(doc(db, "admins", uid), {
@@ -41,7 +45,7 @@ export const updateLastLogin = async (uid: string) => {
   });
 };
 
-// Only name can be changed here.
+// Renames the admin account.
 export const updateAdminProfile = async (uid: string, name: string) => {
   assertUid(uid);
   assertName(name);

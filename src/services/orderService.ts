@@ -1,3 +1,4 @@
+// Order list actions.
 import {
   collection,
   getDocs,
@@ -37,6 +38,7 @@ const attachFarmerNames = async (orders: any[]) => {
   }));
 };
 
+// Get all orders with farmers.
 export const getAllOrders = async () => {
   try {
     const snapshot = await getDocs(ordersRef);
@@ -56,6 +58,7 @@ export const getAllOrders = async () => {
   }
 };
 
+// Get latest orders only.
 export const getRecentOrders = async (count = 5) => {
   try {
     const safeCount = Math.min(Math.max(Math.floor(count) || 5, 1), 50);

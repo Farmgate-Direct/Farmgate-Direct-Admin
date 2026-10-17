@@ -1,10 +1,11 @@
+// Admin page guard.
 import { useEffect, useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../FirebaseConfig";
 
-// Page guard only. Firestore rules still do the real check.
+// Verify the user is an active admin.
 const ProtectedRoute = () => {
   const [loading, setLoading] = useState(true);
   const [authorized, setAuthorized] = useState(false);

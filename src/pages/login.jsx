@@ -1,3 +1,4 @@
+// Admin login page.
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
@@ -8,7 +9,7 @@ import { loginAdmin } from "../services/authService";
 const Login = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("admin@farmgatedirect.com");
-  const [password, setPassword] = useState("farmgate.direct@10192026!");
+  const [password, setPassword] = useState("farmgatedirect@10212026!");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +30,7 @@ const Login = () => {
       });
       navigate("/dashboard", { replace: true });
     } catch (error) {
+      // Map server errors to friendly messages.
       let message = "Invalid email or password.";
       if (error.message === "Unauthorized") {
         message = "Administrator account not found.";

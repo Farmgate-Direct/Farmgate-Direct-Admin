@@ -1,3 +1,4 @@
+// Signing the admin in and out, with a simple lockout after repeated failures.
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../FirebaseConfig";
@@ -27,6 +28,7 @@ const normalizePassword = (password: string) => {
   return password;
 };
 
+// Blocks the form while the lockout from recordFailure is still active.
 const checkLockout = () => {
   if (Date.now() < lockedUntil) {
     const waitSec = Math.ceil((lockedUntil - Date.now()) / 1000);
@@ -34,6 +36,8 @@ const checkLockout = () => {
   }
 };
 
+// Counts a failed attempt and starts the one minute lockout once the limit is
+// reached.
 const recordFailure = () => {
   failedAttempts += 1;
   if (failedAttempts >= MAX_ATTEMPTS) {
@@ -42,6 +46,9 @@ const recordFailure = () => {
   }
 };
 
+// Signs an admin in. Firebase credentials alone are not enough, the account
+// also has to exist in the admins collection and be Active, otherwise the
+// session is signed out again right away.
 export const loginAdmin = async (email: string, password: string) => {
   checkLockout();
   const cleanEmail = normalizeEmail(email);
@@ -75,6 +82,7 @@ export const loginAdmin = async (email: string, password: string) => {
   };
 };
 
+// Signs the current admin out.
 export const logoutAdmin = async () => {
   logAdminActivity("logout", "Logged out of the admin panel");
   await signOut(auth);

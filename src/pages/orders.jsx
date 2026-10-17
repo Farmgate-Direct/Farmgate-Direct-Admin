@@ -1,3 +1,4 @@
+// Track orders and payment history.
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { FaChevronDown } from "react-icons/fa6";
 import { FaShoppingCart } from "react-icons/fa";
@@ -59,6 +60,7 @@ const TransactionCardSkeleton = () => (
   </div>
 );
 
+// Convert Firestore timestamp to Date.
 const toDateObj = (createdAt) => {
   if (!createdAt) return null;
   const d = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
@@ -67,6 +69,7 @@ const toDateObj = (createdAt) => {
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+// Parse custom date string safely.
 const parseCustomDate = (value, endOfDay) => {
   if (typeof value !== "string" || !ISO_DATE_RE.test(value)) return null;
   const d = new Date(`${value}T${endOfDay ? "23:59:59" : "00:00:00"}`);
@@ -78,6 +81,7 @@ const isSameDay = (a, b) =>
   a.getMonth() === b.getMonth() &&
   a.getDate() === b.getDate();
 
+// Get Sunday start of week.
 const startOfWeek = (date) => {
   const d = new Date(date);
   const day = d.getDay();
@@ -86,6 +90,7 @@ const startOfWeek = (date) => {
   return d;
 };
 
+// Check order against date filter.
 const matchesDateFilter = (order, filter, customStart, customEnd) => {
   if (filter === "All Time") return true;
   const orderDate = toDateObj(order.createdAt);
@@ -197,6 +202,7 @@ const OrderPayments = () => {
     return `${names[0]} +${names.length - 1} more`;
   };
 
+  // Normalize payment label for display.
   const getPaymentMethodLabel = (order) => {
     const method = order.payment;
     if (!method || typeof method !== "string" || !method.trim()) return "N/A";
@@ -206,12 +212,47 @@ const OrderPayments = () => {
       .replace(/[\s_-]+/g, "");
     if (normalized === "cod") return "COD";
     if (normalized === "qr") return "GCash";
+    if (normalized === "gcash") return "GCash";
+    if (normalized === "cashondelivery" || normalized === "cash") return "COD";
     return method
       .trim()
       .replace(/[_-]+/g, " ")
       .replace(/\b\w/g, (c) => c.toUpperCase());
   };
 
+  // Order amount only (excludes delivery fee). Falls back to total - fee for old orders.
+  const getOrderAmount = (order) => {
+    if (!order) return 0;
+    if (order.subTotal != null && !Number.isNaN(Number(order.subTotal)))
+      return Number(order.subTotal) || 0;
+    const total = Number(order.total ?? 0) || 0;
+    const fee = Number(order.deliveryFee ?? 0) || 0;
+    return Math.max(0, total - fee);
+  };
+
+  const getDeliveryFee = (order) => Number(order?.deliveryFee ?? 0) || 0;
+
+  // Fulfillment label: Delivery vs Farm Pickup.
+  const getFulfillmentLabel = (order) => {
+    const raw =
+      order?.delivery || order?.deliveryMethod || order?.fulfillment || "";
+    const normalized = String(raw).trim().toLowerCase().replace(/[\s_-]+/g, "");
+    if (normalized === "delivery") return "Delivery";
+    if (
+      normalized === "pickup" ||
+      normalized === "pickupfarm" ||
+      normalized === "farmpickup" ||
+      normalized === "farm_pickup"
+    )
+      return "Farm Pickup";
+    return "N/A";
+  };
+
+  // Combined label e.g. "Delivery • GCash".
+  const getFulfillmentPaymentLabel = (order) =>
+    `${getFulfillmentLabel(order)} • ${getPaymentMethodLabel(order)}`;
+
+  // Filter orders by search, status, date.
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       const buyerName = order.buyerName || "";
@@ -262,6 +303,7 @@ const OrderPayments = () => {
     return filteredOrders.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredOrders, currentPage]);
 
+  // Pad list to keep table height steady.
   const displayOrders = useMemo(() => {
     const list = [...paginatedOrders];
     while (list.length < ITEMS_PER_PAGE) list.push(null);
@@ -273,6 +315,7 @@ const OrderPayments = () => {
     setCurrentPage(page);
   };
 
+  // Lock column widths on first page.
   useEffect(() => {
     if (loading || currentPage !== 1 || paginatedOrders.length === 0) return;
     const table = tableRef.current;
@@ -361,6 +404,7 @@ const OrderPayments = () => {
     });
   };
 
+  // Build timeline steps from order dates.
   const getTimelineSteps = (order) => {
     if (!order) return [];
     const steps = [];
@@ -441,6 +485,7 @@ const OrderPayments = () => {
 
   return (
     <>
+      {/* Page header */}
       <div
         className="rounded-[10px] p-[18px] sm:p-6 lg:p-8 flex justify-between items-center mb-5 sm:mb-6 lg:mb-8"
         style={{ backgroundColor: "#14532d" }}
@@ -460,6 +505,7 @@ const OrderPayments = () => {
           <FaShoppingCart size={28} color="#14532d" />
         </div>
       </div>
+      {/* Orders list and pagination */}
       <div className="bg-white rounded-[10px] shadow-sm border border-gray-100">
         <div className="flex flex-col md:flex-row md:items-center gap-3 p-4 sm:p-5 lg:p-6 border-b border-gray-100">
           <div className="relative w-full md:w-72">
@@ -626,7 +672,7 @@ const OrderPayments = () => {
                         {getProduceSummary(order.products)}
                       </td>
                       <td className="pr-4 font-semibold text-gray-800 whitespace-nowrap">
-                        ₱{(order.total ?? 0).toLocaleString()}
+                        ₱{getOrderAmount(order).toLocaleString()}
                       </td>
                       <td className="pr-4">
                         <span
@@ -714,7 +760,7 @@ const OrderPayments = () => {
                   </p>
                   <div className="flex justify-between items-center mt-3">
                     <span className="font-semibold text-sm text-gray-800">
-                      ₱{(order.total ?? 0).toLocaleString()}
+                      ₱{getOrderAmount(order).toLocaleString()}
                     </span>
                     <span className="text-xs text-gray-400">
                       {formatDate(order.createdAt)}
@@ -798,6 +844,7 @@ const OrderPayments = () => {
           )}
         </div>
       </div>
+      {/* Custom date modal */}
       {customDateModalOpen && (
         <CustomDateModal
           startDate={customStartDate}
@@ -814,6 +861,7 @@ const OrderPayments = () => {
           onClose={() => setCustomDateModalOpen(false)}
         />
       )}
+      {/* Order detail modal */}
       {selectedOrder && (
         <div
           onClick={() => setSelectedOrder(null)}
@@ -873,15 +921,81 @@ const OrderPayments = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center justify-between bg-[#F6F6F6] rounded-[10px] px-4 py-3.5">
-                <div className="flex items-center gap-1.5 text-gray-400 text-[11px] font-semibold uppercase tracking-[1.5px]">
-                  <FiCreditCard size={13} />
-                  Payment Method
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-[#f0fdf4] rounded-[10px] p-3 sm:p-4 min-w-0">
+                  <div className="flex items-center gap-1.5 text-[#14532d] text-[11px] font-semibold uppercase tracking-[1.5px] mb-2">
+                    <FiShoppingBag size={13} />
+                    Fulfillment
+                  </div>
+                  <p className="font-semibold text-sm text-gray-800">
+                    {getFulfillmentLabel(selectedOrder)}
+                  </p>
                 </div>
-                <span className="font-semibold text-sm text-gray-800">
-                  {getPaymentMethodLabel(selectedOrder)}
-                </span>
+                <div className="bg-[#eff6ff] rounded-[10px] p-3 sm:p-4 min-w-0">
+                  <div className="flex items-center gap-1.5 text-[#2563EB] text-[11px] font-semibold uppercase tracking-[1.5px] mb-2">
+                    <FiCreditCard size={13} />
+                    Payment
+                  </div>
+                  <p className="font-semibold text-sm text-gray-800">
+                    {getPaymentMethodLabel(selectedOrder)}
+                    {selectedOrder.paymentStatus && (
+                      <span className="font-normal text-gray-500">
+                        {" • "}
+                        {String(selectedOrder.paymentStatus)
+                          .replace(/[_-]+/g, " ")
+                          .toLowerCase()
+                          .replace(/\b\w/g, (c) => c.toUpperCase())}
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
+              {(getFulfillmentLabel(selectedOrder) === "Delivery" &&
+                selectedOrder.address) ||
+              (getFulfillmentLabel(selectedOrder) === "Farm Pickup" &&
+                (selectedOrder.pickupDate || selectedOrder.pickupTime)) ? (
+                <div className="bg-[#F6F6F6] rounded-[10px] px-4 py-3.5 -mt-2">
+                  {getFulfillmentLabel(selectedOrder) === "Delivery" &&
+                    selectedOrder.address && (
+                      <div className="text-xs text-gray-600 leading-relaxed">
+                        <p className="font-semibold text-gray-800 mb-0.5">
+                          Delivery Address
+                        </p>
+                        {[
+                          selectedOrder.address.street,
+                          selectedOrder.address.barangay,
+                          selectedOrder.address.city,
+                          selectedOrder.address.province,
+                        ]
+                          .filter(Boolean)
+                          .join(", ") || "N/A"}
+                        {selectedOrder.address.phone && (
+                          <span className="block text-gray-500 mt-0.5">
+                            {selectedOrder.address.phone}
+                          </span>
+                        )}
+                        {selectedOrder.distanceKm != null &&
+                          Number(selectedOrder.distanceKm) > 0 && (
+                            <span className="block text-gray-400 mt-0.5">
+                              Distance:{" "}
+                              {Number(selectedOrder.distanceKm).toFixed(1)} km
+                            </span>
+                          )}
+                      </div>
+                    )}
+                  {getFulfillmentLabel(selectedOrder) === "Farm Pickup" &&
+                    (selectedOrder.pickupDate || selectedOrder.pickupTime) && (
+                      <div className="text-xs text-gray-600 leading-relaxed">
+                        <p className="font-semibold text-gray-800 mb-0.5">
+                          Pickup Schedule
+                        </p>
+                        {[selectedOrder.pickupDate, selectedOrder.pickupTime]
+                          .filter(Boolean)
+                          .join(" • ") || "N/A"}
+                      </div>
+                    )}
+                </div>
+              ) : null}
               <div>
                 <div className="flex items-center gap-2 text-gray-400 text-[11px] font-semibold uppercase tracking-[1.5px] mb-3">
                   <FiPackage size={13} />
@@ -989,13 +1103,30 @@ const OrderPayments = () => {
                   );
                 })()}
               </div>
-              <div className="flex items-center justify-between bg-[#f0fdf4] rounded-[10px] px-4 py-4 gap-3">
-                <span className="text-sm font-semibold text-[#14532d]">
-                  Total Amount
-                </span>
-                <span className="text-lg font-bold tracking-tight text-[#14532d] shrink-0">
-                  ₱{(selectedOrder.total ?? 0).toLocaleString()}
-                </span>
+              <div className="bg-[#f0fdf4] rounded-[10px] px-4 py-4 gap-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-gray-600">
+                    Order Amount
+                  </span>
+                  <span className="text-sm font-semibold text-gray-800 shrink-0">
+                    ₱{getOrderAmount(selectedOrder).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm text-gray-600">Delivery Fee</span>
+                  <span className="text-sm font-semibold text-gray-800 shrink-0">
+                    ₱{getDeliveryFee(selectedOrder).toLocaleString()}
+                  </span>
+                </div>
+                <div className="h-px bg-[#bbf7d0] my-1" />
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-[#14532d]">
+                    Total Amount
+                  </span>
+                  <span className="text-lg font-bold tracking-tight text-[#14532d] shrink-0">
+                    ₱{(selectedOrder.total ?? 0).toLocaleString()}
+                  </span>
+                </div>
               </div>
             </div>
           </div>

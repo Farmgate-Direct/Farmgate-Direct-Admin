@@ -1,3 +1,4 @@
+// Logout confirmation modal.
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { sileo } from "sileo";
@@ -11,6 +12,7 @@ const LogoutModal = ({ closeModal }) => {
     try {
       setLoading(true);
       await logoutAdmin();
+      // Close modal before redirecting.
       closeModal();
       sileo.success({
         title: "Logout successful!",

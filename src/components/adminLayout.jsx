@@ -1,3 +1,4 @@
+// Admin page layout.
 import { useState } from "react";
 import { FaBars } from "react-icons/fa";
 import { Outlet } from "react-router-dom";
@@ -11,7 +12,6 @@ const AdminLayout = () => {
     <div className="min-h-screen lg:flex" style={{ backgroundColor: "#F6F6F6" }}>
       <Sidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
       <div className="flex-1 min-w-0 lg:ml-64">
-        {/* ── Mobile header ala Header_Buyer (green rounded-b-2xl) ── */}
         <div
           className="lg:hidden sticky top-0 z-20 px-4 py-3 rounded-b-2xl mb-1 shadow-sm"
           style={{ backgroundColor: "#14532d" }}
